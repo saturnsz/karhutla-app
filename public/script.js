@@ -428,9 +428,13 @@ function updateAuthUI() {
   const statusUser = $("status-user");
 
   if (authed) {
-    if (loginOverlay) loginOverlay.hidden = true;
+    if (loginOverlay) {
+      loginOverlay.hidden = true;
+      loginOverlay.style.display = "none";
+    }
     if (mainWindow) {
       mainWindow.hidden = false;
+      mainWindow.style.display = "";
       mainWindow.classList.remove("minimized");
     }
     if (taskBtn) {
@@ -439,10 +443,17 @@ function updateAuthUI() {
     }
     if (userDisplay) userDisplay.textContent = "Administrator (admin)";
     if (statusUser) statusUser.textContent = "👤 Admin: Aktif";
-    setTimeout(() => { if (typeof map !== "undefined") map.invalidateSize(); }, 100);
+    setTimeout(() => { if (typeof map !== "undefined") map.invalidateSize(); }, 50);
+    setTimeout(() => { if (typeof map !== "undefined") map.invalidateSize(); }, 250);
   } else {
-    if (loginOverlay) loginOverlay.hidden = false;
-    if (mainWindow) mainWindow.hidden = true;
+    if (loginOverlay) {
+      loginOverlay.hidden = false;
+      loginOverlay.style.display = "grid";
+    }
+    if (mainWindow) {
+      mainWindow.hidden = true;
+      mainWindow.style.display = "none";
+    }
     if (taskBtn) {
       taskBtn.classList.remove("active");
       taskBtn.disabled = true;
