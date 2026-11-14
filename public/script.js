@@ -11,6 +11,11 @@ const FIELDS = ["latitude", "longitude", "brightness", "confidence"];
 const HISTORY_KEY = "karhutla_history_v1";
 const MAX_HISTORY = 15;
 
+/* ======================= AUTENTIKASI ADMIN ======================= */
+const AUTH_KEY = "karhutla_admin_auth";
+const ADMIN_USER = "admin";
+const ADMIN_PASS = "admin";
+
 const $ = (id) => document.getElementById(id);
 
 /* ======================= PETA ======================= */
@@ -138,18 +143,22 @@ $("start-btn").addEventListener("click", (e) => {
 document.addEventListener("click", closeMenus);
 
 function restoreWindow() {
+  if (!isLoggedIn()) return;
   win.classList.remove("minimized");
   $("task-btn").classList.add("active");
 }
 $("btn-min").addEventListener("click", () => {
+  if (!isLoggedIn()) return;
   win.classList.add("minimized");
   $("task-btn").classList.remove("active");
 });
 $("task-btn").addEventListener("click", () => {
+  if (!isLoggedIn()) return;
   if (win.classList.contains("minimized")) restoreWindow();
   else $("btn-min").click();
 });
 $("btn-max").addEventListener("click", () => {
+  if (!isLoggedIn()) return;
   win.classList.toggle("maximized");
   setTimeout(() => map.invalidateSize(), 50);
 });
@@ -169,6 +178,7 @@ function runAction(action) {
   if (action.startsWith("tab-")) return activateTab(action.slice(4));
   if (action.startsWith("preset-")) return applyPreset(action.slice(7));
   switch (action) {
+    case "logout": return handleLogout();
     case "sample-csv": return downloadSample();
     case "clear-history": return clearHistory();
     case "about":
@@ -404,8 +414,85 @@ async function loadModelInfo() {
   }
 }
 
+/* ======================= LOGIKA LOGIN / LOGOUT ADMIN ======================= */
+function isLoggedIn() {
+  return localStorage.getItem(AUTH_KEY) === "admin";
+}
+
+function updateAuthUI() {
+  const authed = isLoggedIn();
+  const loginOverlay = $("login-overlay");
+  const mainWindow = $("main-window");
+  const taskBtn = $("task-btn");
+  const userDisplay = $("user-display");
+  const statusUser = $("status-user");
+
+  if (authed) {
+    if (loginOverlay) loginOverlay.hidden = true;
+    if (mainWindow) {
+      mainWindow.hidden = false;
+      mainWindow.classList.remove("minimized");
+    }
+    if (taskBtn) {
+      taskBtn.classList.add("active");
+      taskBtn.disabled = false;
+    }
+    if (userDisplay) userDisplay.textContent = "Administrator (admin)";
+    if (statusUser) statusUser.textContent = "👤 Admin: Aktif";
+    setTimeout(() => { if (typeof map !== "undefined") map.invalidateSize(); }, 100);
+  } else {
+    if (loginOverlay) loginOverlay.hidden = false;
+    if (mainWindow) mainWindow.hidden = true;
+    if (taskBtn) {
+      taskBtn.classList.remove("active");
+      taskBtn.disabled = true;
+    }
+    if (userDisplay) userDisplay.textContent = "Tamu (Belum Masuk)";
+    if (statusUser) statusUser.textContent = "🔒 Terkunci";
+    const passInput = $("login-password");
+    if (passInput) passInput.value = "admin";
+    showError($("login-error"), "");
+  }
+}
+
+function handleLogin(e) {
+  if (e) e.preventDefault();
+  const u = $("login-username").value.trim();
+  const p = $("login-password").value;
+  const errEl = $("login-error");
+  showError(errEl, "");
+
+  if (u === ADMIN_USER && p === ADMIN_PASS) {
+    localStorage.setItem(AUTH_KEY, "admin");
+    updateAuthUI();
+    setStatus("Selamat datang, Administrator.");
+  } else {
+    showError(errEl, "Nama pengguna atau kata sandi salah. Gunakan username: admin dan password: admin.");
+    $("login-password").focus();
+  }
+}
+
+function handleLogout() {
+  localStorage.removeItem(AUTH_KEY);
+  updateAuthUI();
+  setStatus("Sesi telah keluar (Log Off).");
+  showDialog("Log Off", "Anda telah keluar dari sesi Admin.", "info");
+}
+
+if ($("login-form")) {
+  $("login-form").addEventListener("submit", handleLogin);
+}
+if ($("btn-fill-admin")) {
+  $("btn-fill-admin").addEventListener("click", () => {
+    $("login-username").value = "admin";
+    $("login-password").value = "admin";
+    showError($("login-error"), "");
+  });
+}
+
 /* ======================= INIT ======================= */
 renderHistory();
 checkHealth();
 loadModelInfo();
+updateAuthUI();
 setStatus("Siap");

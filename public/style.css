@@ -359,3 +359,117 @@ tbody tr:hover .tag { color: #fff; }
 .dialog { width: min(420px, 92vw); }
 .dlg-body { display: flex; gap: 14px; align-items: flex-start; padding: 18px 16px 10px; }
 .dlg-body p { margin: 4px 0 0; }
+
+/* ---------- Login Window (Log On to Windows) ---------- */
+.login-window {
+  width: min(440px, 94vw);
+  background: var(--xp-face);
+  box-shadow: 4px 6px 24px rgba(0, 0, 0, .6);
+  border: 3px solid var(--xp-border);
+  border-radius: 8px 8px 3px 3px;
+  overflow: hidden;
+  animation: xpPop 0.18s ease-out;
+}
+@keyframes xpPop {
+  from { transform: scale(0.96); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.login-banner {
+  background: linear-gradient(180deg, #094eb8 0%, #1562d6 50%, #2273e6 100%);
+  color: #fff;
+  padding: 12px 16px;
+  border-bottom: 2px solid #e5a019;
+}
+.login-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.login-flag {
+  width: 28px;
+  height: 28px;
+  transform: skew(-4deg);
+  background: conic-gradient(#f25022 0 25%, #7fba00 0 50%, #00a4ef 0 75%, #ffb900 0);
+  border-radius: 3px;
+  box-shadow: 1px 1px 4px rgba(0,0,0,.4);
+  flex-shrink: 0;
+}
+.login-badge h2 {
+  margin: 0;
+  font: bold 17px "Trebuchet MS", Tahoma, sans-serif;
+  letter-spacing: 0.5px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, .6);
+}
+.login-badge h2 .xp-text {
+  color: #ff9900;
+  font-style: italic;
+}
+.login-badge small {
+  display: block;
+  font-size: 11px;
+  opacity: 0.9;
+}
+.login-body {
+  padding: 16px 18px 12px;
+  background: #fdfdfc;
+}
+.login-row {
+  display: grid;
+  grid-template-columns: 125px 1fr;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+@media (max-width: 440px) {
+  .login-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+.login-row label {
+  font-weight: bold;
+  font-size: 12px;
+  margin: 0;
+  color: #222;
+}
+.login-row input {
+  padding: 5px 6px;
+  font: 13px var(--font);
+  border: 1px solid var(--xp-sunken);
+  background: #fff;
+  width: 100%;
+}
+.login-row input:focus {
+  outline: 1px dotted #000;
+  outline-offset: -2px;
+}
+.login-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #fffde8;
+  border: 1px solid #d4c885;
+  border-radius: 3px;
+  padding: 8px 10px;
+  margin: 12px 0 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #4a4417;
+}
+.login-note .note-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+.login-note code {
+  background: #fdf5b8;
+  border: 1px solid #dcd18b;
+  font-weight: bold;
+  color: #8f3400;
+  padding: 1px 5px;
+  font-size: 12px;
+}
+.btn-row.right {
+  justify-content: flex-end;
+  margin-top: 14px;
+  margin-bottom: 4px;
+}
