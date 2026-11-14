@@ -12,18 +12,6 @@
 <body>
   <div class="desktop">
 
-    <!-- ================= DESKTOP ICONS (WINDOWS XP SHORTCUTS) ================= -->
-    <div class="desktop-icons" id="desktop-icons" hidden style="display: none;">
-      <div class="desktop-icon" id="dicon-klasifikasi" tabindex="0" title="Buka Klasifikasi Karhutla Kalimantan">
-        <span class="dicon-img">🔥</span>
-        <span class="dicon-label">Klasifikasi Karhutla</span>
-      </div>
-      <div class="desktop-icon" id="dicon-eda" tabindex="0" title="Buka Eksplorasi Data Satelit (EDA)">
-        <span class="dicon-img">📊</span>
-        <span class="dicon-label">Eksplorasi Data (EDA)</span>
-      </div>
-    </div>
-
     <!-- ================= FITUR 1: JENDELA KLASIFIKASI ================= -->
     <section class="window focused" id="main-window" aria-labelledby="win-title" hidden style="display: none;">
       <header class="titlebar">
@@ -342,16 +330,22 @@
       </div>
     </div>
 
-    <!-- ================= TASKBAR ================= -->
-    <footer class="taskbar">
-      <button type="button" class="start-btn" id="start-btn" aria-haspopup="true">
+    <!-- ================= SIDEBAR BAWAH (TASKBAR FITUR WINDOWS XP) ================= -->
+    <footer class="taskbar" id="taskbar">
+      <button type="button" class="start-btn" id="start-btn" aria-haspopup="true" title="Start Menu">
         <span class="flag" aria-hidden="true"></span><em>start</em>
       </button>
-      <button type="button" class="task-btn active" id="task-btn-klasifikasi" title="Jendela Klasifikasi Karhutla">🔥
-        Klasifikasi Karhutla</button>
-      <button type="button" class="task-btn" id="task-btn-eda" title="Jendela Eksplorasi Data (EDA)">📊 Eksplorasi Data
-        (EDA)</button>
-      <div class="tray"><span aria-hidden="true">🛰️</span> <time id="clock">--.--</time></div>
+      <div class="task-items" id="task-items">
+        <button type="button" class="task-btn active" id="task-btn-klasifikasi" title="Buka Fitur 1: Klasifikasi Karhutla">
+          <span class="task-icon" aria-hidden="true">🔥</span>
+          <span class="task-text">Klasifikasi Karhutla</span>
+        </button>
+        <button type="button" class="task-btn" id="task-btn-eda" title="Buka Fitur 2: Eksplorasi Data (EDA)">
+          <span class="task-icon" aria-hidden="true">📊</span>
+          <span class="task-text">Eksplorasi Data (EDA)</span>
+        </button>
+      </div>
+      <div class="tray"><span aria-hidden="true" title="Satelit NASA MODIS">🛰️</span> <time id="clock">--.--</time></div>
     </footer>
 
     <!-- ================= LOGIN DIALOG (LOG ON TO WINDOWS) ================= -->

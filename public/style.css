@@ -328,45 +328,80 @@ tbody tr:hover .tag { color: #fff; }
 .statusbar .cell { padding: 2px 8px; border: 1px solid; border-color: #aca899 #fff #fff #aca899; white-space: nowrap; }
 .statusbar .grow { flex: 1; overflow: hidden; text-overflow: ellipsis; }
 
-/* ---------- Taskbar ---------- */
+/* ---------- Taskbar (Sidebar Bawah) ---------- */
 .taskbar {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
   height: var(--taskbar-h); display: flex; align-items: stretch; gap: 6px;
   background: linear-gradient(180deg, #245edc 0%, #3f8cf3 9%, #245edc 18%, #245edc 92%, #1941a5 100%);
   border-top: 1px solid #0c3ec0;
+  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.3);
 }
 .start-btn {
-  display: flex; align-items: center; gap: 6px; padding: 0 22px 0 10px; margin-right: 8px;
-  border: 0; border-radius: 0 12px 12px 0; cursor: default;
+  display: flex; align-items: center; gap: 6px; padding: 0 18px 0 10px; margin-right: 4px;
+  border: 0; border-radius: 0 12px 12px 0; cursor: pointer;
   background: linear-gradient(180deg, #5fb957 0%, #3c9a30 12%, #2f8a22 50%, #3a9d2e 88%, #2a7a1d 100%);
   box-shadow: inset -2px 0 3px rgba(0, 0, 0, .35), 2px 0 3px rgba(0, 0, 0, .3);
+  user-select: none;
 }
 .start-btn:hover { filter: brightness(1.1); }
-.start-btn em { color: #fff; font: italic bold 19px "Franklin Gothic Medium", "Trebuchet MS", sans-serif; text-shadow: 1px 1px 2px rgba(0,0,0,.6); }
+.start-btn:active { filter: brightness(0.92); }
+.start-btn em { color: #fff; font: italic bold 18px "Franklin Gothic Medium", "Trebuchet MS", sans-serif; text-shadow: 1px 1px 2px rgba(0,0,0,.6); }
 .flag {
   width: 16px; height: 16px; transform: skew(-4deg);
   background: conic-gradient(#f25022 0 25%, #7fba00 0 50%, #00a4ef 0 75%, #ffb900 0);
   border-radius: 2px;
 }
-.task-btn {
-  align-self: center;
-  flex: 1 1 auto;
-  max-width: 200px;
+
+.task-items {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
   min-width: 0;
-  height: 24px;
-  padding: 0 8px;
+  height: 100%;
+}
+
+.task-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: center;
+  flex: 0 1 180px;
+  max-width: 220px;
+  min-width: 0;
+  height: 25px;
+  padding: 0 10px;
   text-align: left;
   color: #fff;
   font: 12px var(--font);
+  background: linear-gradient(180deg, #5b95f0 0%, #3c7de8 100%);
+  border: 1px solid #1c4bb0;
+  border-radius: 3px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.12s, box-shadow 0.12s, filter 0.12s;
+}
+.task-btn:hover {
+  background: linear-gradient(180deg, #6ba5ff 0%, #4a8bf7 100%);
+  filter: brightness(1.08);
+}
+.task-btn.active {
+  background: linear-gradient(180deg, #1844a4 0%, #2457be 100%);
+  box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.65), inset 0 0 1px #fff;
+  border-color: #0c2b75;
+  font-weight: bold;
+}
+.task-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.task-text {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  background: linear-gradient(180deg, #5b95f0, #3c7de8);
-  border: 1px solid #1c4bb0;
-  border-radius: 3px;
-  cursor: default;
+  min-width: 0;
 }
-.task-btn.active { background: linear-gradient(180deg, #1e4fb8, #2a5ec9); box-shadow: inset 1px 1px 3px rgba(0,0,0,.5); }
 .tray {
   margin-left: auto; display: flex; align-items: center; gap: 8px; padding: 0 12px; color: #fff; font-size: 12px;
   background: linear-gradient(180deg, #0c8fe8 0%, #1294ea 20%, #0f84dc 90%, #0b6cbf 100%);
@@ -524,53 +559,7 @@ tbody tr:hover .tag { color: #fff; }
   margin-bottom: 4px;
 }
 
-/* ============================================================
-   Desktop Icons (Windows XP Style)
-   ============================================================ */
-.desktop-icons {
-  position: absolute;
-  top: 14px;
-  left: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  z-index: 2;
-  user-select: none;
-}
-.desktop-icon {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 78px;
-  padding: 6px 4px;
-  border: 1px solid transparent;
-  cursor: pointer;
-  text-align: center;
-  border-radius: 3px;
-}
-.desktop-icon:hover {
-  background: rgba(49, 106, 197, 0.35);
-  border: 1px solid rgba(49, 106, 197, 0.7);
-}
-.desktop-icon:active, .desktop-icon:focus {
-  background: rgba(49, 106, 197, 0.6);
-  border: 1px dotted #ffffff;
-  outline: none;
-}
-.dicon-img {
-  font-size: 32px;
-  line-height: 1;
-  filter: drop-shadow(1px 2px 3px rgba(0,0,0,0.6));
-}
-.dicon-label {
-  margin-top: 5px;
-  font-size: 11px;
-  font-family: var(--font);
-  color: #fff;
-  text-shadow: 1px 1px 2px #000, 0 0 5px #000;
-  line-height: 1.25;
-  word-break: break-word;
-}
+
 
 /* ============================================================
    Fitur EDA (Exploratory Data Analysis)
@@ -716,26 +705,7 @@ tbody tr:hover .tag { color: #fff; }
 /* Tablet Kecil & Ponsel (<= 768px) */
 @media (max-width: 768px) {
   :root {
-    --taskbar-h: 36px;
-  }
-  .desktop-icons {
-    position: static;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 12px;
-    margin-bottom: 12px;
-    padding: 4px 0;
-  }
-  .desktop-icon {
-    width: 86px;
-    padding: 6px 4px;
-  }
-  .dicon-img {
-    font-size: 28px;
-  }
-  .dicon-label {
-    font-size: 11px;
+    --taskbar-h: 44px;
   }
   .window {
     border-radius: 6px 6px 2px 2px;
@@ -899,33 +869,52 @@ tbody tr:hover .tag { color: #fff; }
   /* Taskbar XP Mobile */
   .taskbar {
     height: var(--taskbar-h);
-    padding: 0 3px;
-    gap: 3px;
+    padding: 0 4px;
+    gap: 4px;
+    z-index: 1000;
+    align-items: center;
   }
   .start-btn {
-    padding: 0 10px 0 6px;
+    padding: 0 8px 0 6px;
+    height: 32px;
     margin-right: 2px;
-    border-radius: 0 8px 8px 0;
+    border-radius: 0 6px 6px 0;
   }
   .start-btn em {
-    font-size: 15px;
+    font-size: 14px;
   }
   .flag {
     width: 14px;
     height: 14px;
   }
+  .task-items {
+    gap: 4px;
+  }
   .task-btn {
     flex: 1 1 0;
     min-width: 0;
-    max-width: 130px;
-    height: 26px;
+    max-width: none;
+    height: 32px;
     font-size: 11px;
-    padding: 0 5px;
+    padding: 0 6px;
+    justify-content: center;
+    border-radius: 4px;
+  }
+  .task-btn.active {
+    background: linear-gradient(180deg, #123996 0%, #2050b4 100%);
+    box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.7), 0 0 0 1px #9ec9ff;
+  }
+  .task-icon {
+    font-size: 14px;
+  }
+  .task-text {
+    font-size: 11px;
+    font-weight: bold;
   }
   .tray {
     padding: 0 6px;
-    gap: 4px;
-    font-size: 11px;
+    gap: 3px;
+    font-size: 10.5px;
   }
 
   /* Start Menu Mobile */
@@ -1017,27 +1006,27 @@ tbody tr:hover .tag { color: #fff; }
     font-size: 11px;
   }
   .task-btn {
-    max-width: 95px;
     font-size: 9.5px;
     padding: 0 3px;
+    gap: 2px;
+  }
+  .task-icon {
+    font-size: 12px;
+  }
+  .task-text {
+    font-size: 9.5px;
   }
   .start-btn {
     padding: 0 6px 0 4px;
   }
   .start-btn em {
-    font-size: 13px;
+    font-size: 12px;
   }
   .tray {
-    padding: 0 4px;
-    font-size: 10px;
+    padding: 0 3px;
+    font-size: 9.5px;
   }
   #map, #eda-map {
     height: 250px;
-  }
-  .desktop-icons {
-    gap: 6px;
-  }
-  .desktop-icon {
-    width: 72px;
   }
 }

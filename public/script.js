@@ -121,10 +121,11 @@ const winKlasifikasi = $("main-window");
 const winEda = $("eda-window");
 const taskBtnKlasifikasi = $("task-btn-klasifikasi");
 const taskBtnEda = $("task-btn-eda");
-const desktopIcons = $("desktop-icons");
 
-function focusWindow(target) {
+function openFeature(target) {
   if (!isLoggedIn()) return;
+  const isMobile = window.innerWidth <= 900;
+
   if (target === "klasifikasi") {
     if (winKlasifikasi) {
       winKlasifikasi.hidden = false;
@@ -134,9 +135,18 @@ function focusWindow(target) {
     }
     if (winEda) {
       winEda.classList.remove("focused");
+      if (isMobile) {
+        winEda.hidden = true;
+        winEda.style.display = "none";
+      }
     }
     if (taskBtnKlasifikasi) taskBtnKlasifikasi.classList.add("active");
-    setTimeout(() => { if (typeof map !== "undefined") map.invalidateSize(); }, 60);
+    if (taskBtnEda) taskBtnEda.classList.remove("active");
+    if (isMobile) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    setTimeout(() => { if (typeof map !== "undefined" && map) map.invalidateSize(); }, 80);
+    setTimeout(() => { if (typeof map !== "undefined" && map) map.invalidateSize(); }, 300);
   } else if (target === "eda") {
     if (winEda) {
       winEda.hidden = false;
@@ -146,48 +156,32 @@ function focusWindow(target) {
     }
     if (winKlasifikasi) {
       winKlasifikasi.classList.remove("focused");
+      if (isMobile) {
+        winKlasifikasi.hidden = true;
+        winKlasifikasi.style.display = "none";
+      }
     }
     if (taskBtnEda) taskBtnEda.classList.add("active");
+    if (taskBtnKlasifikasi) taskBtnKlasifikasi.classList.remove("active");
+    if (isMobile) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
     if (typeof window.edaInit === "function") window.edaInit();
     if (typeof window.edaInvalidateMap === "function") window.edaInvalidateMap();
   }
 }
-window.focusWindow = focusWindow;
-
-function toggleWindow(target) {
-  if (!isLoggedIn()) return;
-  const w = target === "klasifikasi" ? winKlasifikasi : winEda;
-  const tb = target === "klasifikasi" ? taskBtnKlasifikasi : taskBtnEda;
-  if (!w) return;
-  if (w.hidden || w.style.display === "none") {
-    focusWindow(target);
-  } else if (w.classList.contains("minimized")) {
-    focusWindow(target);
-  } else if (w.classList.contains("focused")) {
-    w.classList.add("minimized");
-    w.classList.remove("focused");
-    if (tb) tb.classList.remove("active");
-  } else {
-    focusWindow(target);
-  }
-}
+window.openFeature = openFeature;
+window.focusWindow = openFeature;
 
 if (taskBtnKlasifikasi) {
-  taskBtnKlasifikasi.addEventListener("click", () => toggleWindow("klasifikasi"));
+  taskBtnKlasifikasi.addEventListener("click", () => openFeature("klasifikasi"));
 }
 if (taskBtnEda) {
-  taskBtnEda.addEventListener("click", () => toggleWindow("eda"));
+  taskBtnEda.addEventListener("click", () => openFeature("eda"));
 }
 
 if (winKlasifikasi) {
-  winKlasifikasi.addEventListener("mousedown", () => focusWindow("klasifikasi"));
-}
-
-if ($("dicon-klasifikasi")) {
-  $("dicon-klasifikasi").addEventListener("click", () => focusWindow("klasifikasi"));
-}
-if ($("dicon-eda")) {
-  $("dicon-eda").addEventListener("click", () => focusWindow("eda"));
+  winKlasifikasi.addEventListener("mousedown", () => openFeature("klasifikasi"));
 }
 
 function closeMenus() {
@@ -504,11 +498,7 @@ function updateAuthUI() {
       loginOverlay.hidden = true;
       loginOverlay.style.display = "none";
     }
-    if (desktopIcons) {
-      desktopIcons.hidden = false;
-      desktopIcons.style.display = "flex";
-    }
-    focusWindow("klasifikasi");
+    openFeature("klasifikasi");
     if (taskBtnKlasifikasi) taskBtnKlasifikasi.disabled = false;
     if (taskBtnEda) taskBtnEda.disabled = false;
     if (userDisplay) userDisplay.textContent = "Administrator (admin)";
@@ -517,10 +507,6 @@ function updateAuthUI() {
     if (loginOverlay) {
       loginOverlay.hidden = false;
       loginOverlay.style.display = "grid";
-    }
-    if (desktopIcons) {
-      desktopIcons.hidden = true;
-      desktopIcons.style.display = "none";
     }
     if (winKlasifikasi) {
       winKlasifikasi.hidden = true;
