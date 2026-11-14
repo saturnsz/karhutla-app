@@ -589,3 +589,19 @@ checkHealth();
 loadModelInfo();
 updateAuthUI();
 setStatus("Siap");
+
+/* ======================= RESPONSIF & ORIENTASI ======================= */
+let resizeTimer = null;
+window.addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (typeof map !== "undefined" && map) map.invalidateSize();
+    if (typeof window.edaInvalidateMap === "function") window.edaInvalidateMap();
+  }, 100);
+});
+window.addEventListener("orientationchange", () => {
+  setTimeout(() => {
+    if (typeof map !== "undefined" && map) map.invalidateSize();
+    if (typeof window.edaInvalidateMap === "function") window.edaInvalidateMap();
+  }, 200);
+});

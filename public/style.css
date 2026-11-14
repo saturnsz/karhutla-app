@@ -114,8 +114,13 @@ body {
   background: var(--xp-face);
   border-bottom: 1px solid #d4d0c8;
   position: relative; z-index: 20;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
-.menu { position: relative; }
+.menubar::-webkit-scrollbar { display: none; }
+.menu { position: relative; flex-shrink: 0; }
 .menu > button {
   background: none; border: 0; padding: 3px 9px;
   font: 13px var(--font); cursor: default;
@@ -164,8 +169,16 @@ body {
 .window.maximized .window-body { overflow: auto; }
 
 /* ---------- Tabs ---------- */
-.tabs { display: flex; gap: 2px; padding-left: 4px; position: relative; top: 1px; }
+.tabs {
+  display: flex; gap: 2px; padding-left: 4px; position: relative; top: 1px;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
 .tab {
+  flex-shrink: 0;
   padding: 5px 14px 4px; margin-top: 2px;
   background: linear-gradient(180deg, #fff 0%, #ecebe5 100%);
   border: 1px solid #919b9c; border-bottom: 0;
@@ -336,9 +349,22 @@ tbody tr:hover .tag { color: #fff; }
   border-radius: 2px;
 }
 .task-btn {
-  align-self: center; width: 200px; height: 24px; padding: 0 8px; text-align: left; color: #fff;
-  font: 12px var(--font); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  background: linear-gradient(180deg, #5b95f0, #3c7de8); border: 1px solid #1c4bb0; border-radius: 3px; cursor: default;
+  align-self: center;
+  flex: 1 1 auto;
+  max-width: 200px;
+  min-width: 0;
+  height: 24px;
+  padding: 0 8px;
+  text-align: left;
+  color: #fff;
+  font: 12px var(--font);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: linear-gradient(180deg, #5b95f0, #3c7de8);
+  border: 1px solid #1c4bb0;
+  border-radius: 3px;
+  cursor: default;
 }
 .task-btn.active { background: linear-gradient(180deg, #1e4fb8, #2a5ec9); box-shadow: inset 1px 1px 3px rgba(0,0,0,.5); }
 .tray {
@@ -654,4 +680,364 @@ tbody tr:hover .tag { color: #fff; }
 }
 .eda-star.green {
   background: #1f9d36;
+}
+
+/* ============================================================
+   RESPONSIVE DESIGN (TABLET & MOBILE)
+   ============================================================ */
+
+/* Tablet & Layar Sedang (<= 900px) */
+@media (max-width: 900px) {
+  body {
+    overflow: auto;
+  }
+  .desktop {
+    padding: 8px 8px calc(var(--taskbar-h) + 12px);
+    overflow-x: hidden;
+  }
+  .window {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto 16px;
+  }
+  .window-body {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 10px 8px;
+  }
+  #map, #eda-map {
+    height: 340px;
+  }
+  .window.maximized #map, .window.maximized #eda-map {
+    height: 350px;
+  }
+}
+
+/* Tablet Kecil & Ponsel (<= 768px) */
+@media (max-width: 768px) {
+  :root {
+    --taskbar-h: 36px;
+  }
+  .desktop-icons {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    padding: 4px 0;
+  }
+  .desktop-icon {
+    width: 86px;
+    padding: 6px 4px;
+  }
+  .dicon-img {
+    font-size: 28px;
+  }
+  .dicon-label {
+    font-size: 11px;
+  }
+  .window {
+    border-radius: 6px 6px 2px 2px;
+    border-width: 2px;
+  }
+  .window.maximized {
+    border-radius: 0;
+    border-width: 0;
+  }
+}
+
+/* Ponsel Standar (<= 640px) */
+@media (max-width: 640px) {
+  .desktop {
+    padding: 4px 4px calc(var(--taskbar-h) + 8px);
+  }
+  .window {
+    border-left: 0;
+    border-right: 0;
+    border-radius: 5px 5px 0 0;
+    margin-bottom: 12px;
+  }
+
+  /* Titlebar & Controls */
+  .titlebar {
+    min-height: 32px;
+    padding: 3px 6px;
+  }
+  .titlebar h1 {
+    font-size: 12.5px;
+  }
+  .ctl {
+    width: 24px;
+    height: 24px;
+    border-radius: 3px;
+  }
+
+  /* Menubar */
+  .menubar {
+    padding: 2px;
+    gap: 1px;
+  }
+  .menu > button {
+    padding: 5px 8px;
+    font-size: 12px;
+  }
+  .dropdown {
+    min-width: 190px;
+    max-width: calc(100vw - 16px);
+  }
+  .dropdown button {
+    padding: 8px 14px;
+    font-size: 12.5px;
+  }
+
+  /* Banner */
+  .banner {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+  .banner-icon {
+    font-size: 24px;
+  }
+  .banner p {
+    font-size: 11.5px;
+    line-height: 1.35;
+  }
+
+  /* Tabs */
+  .tab {
+    padding: 6px 12px 5px;
+    font-size: 12px;
+  }
+  .tab-panels {
+    padding: 8px 6px;
+    min-height: auto;
+  }
+
+  /* Form & Inputs (Cegah auto-zoom iOS dengan font-size 16px) */
+  fieldset {
+    padding: 6px 8px 8px;
+    margin-bottom: 8px;
+  }
+  legend {
+    font-size: 12px;
+  }
+  .row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  input[type="number"],
+  input[type="text"],
+  input[type="password"],
+  input[type="file"],
+  .xp-select {
+    font-size: 16px;
+    padding: 6px 8px;
+    border-radius: 2px;
+  }
+  label small {
+    font-size: 10.5px;
+    margin-top: 2px;
+  }
+
+  /* Tombol XP Touch-Friendly */
+  .btn-row {
+    gap: 6px;
+    margin: 8px 0 4px;
+  }
+  .xp-btn {
+    min-width: 72px;
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  /* Peta Responsif */
+  #map, #eda-map {
+    height: 290px;
+  }
+  .window.maximized #map,
+  .window.maximized #eda-map {
+    height: 310px;
+  }
+  .legend {
+    gap: 8px;
+    font-size: 11px;
+    margin-top: 6px;
+  }
+
+  /* Kotak Pesan Hasil */
+  .msgbox {
+    margin-top: 10px;
+  }
+  .msgbox-body {
+    flex-direction: column;
+    padding: 10px;
+    gap: 8px;
+  }
+  .msgbox-body h2 {
+    font-size: 14px;
+  }
+  .msg-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+  }
+
+  /* Status Bar */
+  .statusbar {
+    font-size: 11px;
+    padding: 2px 3px;
+  }
+  .statusbar .cell {
+    padding: 2px 5px;
+  }
+  #status-user,
+  #eda-status-records {
+    display: none; /* Sembunyikan elemen sekunder agar status tetap ringkas di layar sempit */
+  }
+
+  /* Taskbar XP Mobile */
+  .taskbar {
+    height: var(--taskbar-h);
+    padding: 0 3px;
+    gap: 3px;
+  }
+  .start-btn {
+    padding: 0 10px 0 6px;
+    margin-right: 2px;
+    border-radius: 0 8px 8px 0;
+  }
+  .start-btn em {
+    font-size: 15px;
+  }
+  .flag {
+    width: 14px;
+    height: 14px;
+  }
+  .task-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 130px;
+    height: 26px;
+    font-size: 11px;
+    padding: 0 5px;
+  }
+  .tray {
+    padding: 0 6px;
+    gap: 4px;
+    font-size: 11px;
+  }
+
+  /* Start Menu Mobile */
+  .start-menu {
+    width: min(290px, 94vw);
+    max-height: calc(100vh - var(--taskbar-h) - 8px);
+    overflow-y: auto;
+  }
+  .sm-head {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+  .sm-list button {
+    padding: 8px 12px;
+    font-size: 12.5px;
+  }
+  .sm-foot button {
+    padding: 6px 12px;
+  }
+
+  /* Dialog & Login */
+  .overlay {
+    padding: 8px;
+  }
+  .login-window {
+    width: min(390px, 96vw);
+    max-height: 94vh;
+    overflow-y: auto;
+  }
+  .login-banner {
+    padding: 10px 12px;
+  }
+  .login-badge h2 {
+    font-size: 15px;
+  }
+  .login-body {
+    padding: 12px;
+  }
+  .login-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+  .login-note {
+    font-size: 11.5px;
+    padding: 7px 9px;
+    margin: 8px 0;
+  }
+  .login-window .btn-row.right {
+    display: flex;
+    flex-direction: row;
+    justify-content: stretch;
+    gap: 6px;
+  }
+  .login-window .btn-row.right .xp-btn {
+    flex: 1;
+    min-height: 32px;
+  }
+
+  .dialog {
+    width: min(360px, 95vw);
+  }
+  .dlg-body {
+    padding: 12px 10px 8px;
+    gap: 10px;
+  }
+
+  /* ListView & Tabel */
+  .listview {
+    margin-top: 6px;
+    -webkit-overflow-scrolling: touch;
+  }
+  table {
+    font-size: 11px;
+  }
+  th, td {
+    padding: 4px 6px;
+  }
+
+  /* Legenda Heatmap EDA */
+  .heat-legend i {
+    width: 110px;
+  }
+}
+
+/* Ponsel Sangat Kecil (<= 380px) */
+@media (max-width: 380px) {
+  .titlebar h1 {
+    font-size: 11px;
+  }
+  .task-btn {
+    max-width: 95px;
+    font-size: 9.5px;
+    padding: 0 3px;
+  }
+  .start-btn {
+    padding: 0 6px 0 4px;
+  }
+  .start-btn em {
+    font-size: 13px;
+  }
+  .tray {
+    padding: 0 4px;
+    font-size: 10px;
+  }
+  #map, #eda-map {
+    height: 250px;
+  }
+  .desktop-icons {
+    gap: 6px;
+  }
+  .desktop-icon {
+    width: 72px;
+  }
 }
