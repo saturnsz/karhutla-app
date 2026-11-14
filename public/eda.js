@@ -385,7 +385,9 @@
   // Tombol kontrol jendela EDA (Min, Max, Close)
   const edaWin = $("eda-window");
   if ($("btn-eda-min")) {
-    $("btn-eda-min").addEventListener("click", () => {
+    $("btn-eda-min").addEventListener("mousedown", (e) => e.stopPropagation());
+    $("btn-eda-min").addEventListener("click", (e) => {
+      e.stopPropagation();
       if (edaWin) {
         edaWin.classList.add("minimized");
         edaWin.classList.remove("focused");
@@ -396,18 +398,23 @@
   }
 
   if ($("btn-eda-max")) {
-    $("btn-eda-max").addEventListener("click", () => {
+    $("btn-eda-max").addEventListener("mousedown", (e) => e.stopPropagation());
+    $("btn-eda-max").addEventListener("click", (e) => {
+      e.stopPropagation();
       if (edaWin) edaWin.classList.toggle("maximized");
       window.edaInvalidateMap();
     });
   }
 
   if ($("btn-eda-close")) {
-    $("btn-eda-close").addEventListener("click", () => {
+    $("btn-eda-close").addEventListener("mousedown", (e) => e.stopPropagation());
+    $("btn-eda-close").addEventListener("click", (e) => {
+      e.stopPropagation();
       if (edaWin) {
         edaWin.hidden = true;
         edaWin.style.display = "none";
         edaWin.classList.remove("focused");
+        edaWin.classList.remove("minimized");
       }
       const tb = $("task-btn-eda");
       if (tb) tb.classList.remove("active");

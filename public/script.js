@@ -218,18 +218,47 @@ function openFeature(target) {
 window.openFeature = openFeature;
 window.focusWindow = openFeature;
 
+function isWindowActive(win) {
+  if (!win) return false;
+  if (win.hidden || win.style.display === "none") return false;
+  if (win.classList.contains("minimized")) return false;
+  return win.classList.contains("focused");
+}
+
+function toggleFeature(target) {
+  if (!isLoggedIn()) return;
+  let win, tb;
+  if (target === "klasifikasi") { win = winKlasifikasi; tb = taskBtnKlasifikasi; }
+  else if (target === "eda") { win = winEda; tb = taskBtnEda; }
+  else if (target === "publikasi") { win = winPublikasi; tb = taskBtnPublikasi; }
+
+  if (isWindowActive(win)) {
+    // Jendela sedang terbuka dan aktif di layar -> minimalkan
+    win.classList.add("minimized");
+    win.classList.remove("focused");
+    if (tb) tb.classList.remove("active");
+  } else {
+    // Jendela terminimalkan / tertutup / di latar belakang -> buka dan fokuskan
+    openFeature(target);
+  }
+}
+window.toggleFeature = toggleFeature;
+
 if (taskBtnKlasifikasi) {
-  taskBtnKlasifikasi.addEventListener("click", () => openFeature("klasifikasi"));
+  taskBtnKlasifikasi.addEventListener("click", () => toggleFeature("klasifikasi"));
 }
 if (taskBtnEda) {
-  taskBtnEda.addEventListener("click", () => openFeature("eda"));
+  taskBtnEda.addEventListener("click", () => toggleFeature("eda"));
 }
 if (taskBtnPublikasi) {
-  taskBtnPublikasi.addEventListener("click", () => openFeature("publikasi"));
+  taskBtnPublikasi.addEventListener("click", () => toggleFeature("publikasi"));
 }
 
 if (winKlasifikasi) {
   winKlasifikasi.addEventListener("mousedown", () => openFeature("klasifikasi"));
+}
+if (winEda) {
+  winEda.addEventListener("mousedown", () => openFeature("eda"));
 }
 if (winPublikasi) {
   winPublikasi.addEventListener("mousedown", () => openFeature("publikasi"));
@@ -260,23 +289,143 @@ $("start-btn").addEventListener("click", (e) => {
 });
 document.addEventListener("click", closeMenus);
 
-$("btn-min").addEventListener("click", () => {
+/* Kontrol Jendela Klasifikasi Karhutla */
+const btnKlasMin = $("btn-min");
+const btnKlasMax = $("btn-max");
+const btnKlasClose = $("btn-close");
+
+if (btnKlasMin) {
+  btnKlasMin.addEventListener("mousedown", (e) => e.stopPropagation());
+  btnKlasMin.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (!isLoggedIn()) return;
+    if (winKlasifikasi) {
+      winKlasifikasi.classList.add("minimized");
+      winKlasifikasi.classList.remove("focused");
+    }
+    if (taskBtnKlasifikasi) taskBtnKlasifikasi.classList.remove("active");
+  });
+}
+
+if (btnKlasMax) {
+  btnKlasMax.addEventListener("mousedown", (e) => e.stopPropagation());
+  btnKlasMax.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (!isLoggedIn()) return;
+    if (winKlasifikasi) winKlasifikasi.classList.toggle("maximized");
+    setTimeout(() => { if (typeof map !== "undefined" && map) map.invalidateSize(); }, 60);
+  });
+}
+
+if (btnKlasClose) {
+  btnKlasClose.addEventListener("mousedown", (e) => e.stopPropagation());
+  btnKlasClose.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (winKlasifikasi) {
+      winKlasifikasi.hidden = true;
+      winKlasifikasi.style.display = "none";
+      winKlasifikasi.classList.remove("focused");
+      winKlasifikasi.classList.remove("minimized");
+    }
+    if (taskBtnKlasifikasi) taskBtnKlasifikasi.classList.remove("active");
+  });
+}
+
+/* Kontrol Jendela Publikasi SINTA 4 (Minimalkan, Maksimalkan, Tutup) */
+function minimizePublikasi() {
   if (!isLoggedIn()) return;
-  winKlasifikasi.classList.add("minimized");
-  winKlasifikasi.classList.remove("focused");
-  if (taskBtnKlasifikasi) taskBtnKlasifikasi.classList.remove("active");
-});
-$("btn-max").addEventListener("click", () => {
+  if (winPublikasi) {
+    winPublikasi.classList.add("minimized");
+    winPublikasi.classList.remove("focused");
+  }
+  if (taskBtnPublikasi) taskBtnPublikasi.classList.remove("active");
+}
+
+function maximizePublikasi() {
   if (!isLoggedIn()) return;
-  winKlasifikasi.classList.toggle("maximized");
-  setTimeout(() => map.invalidateSize(), 60);
-});
-$("btn-close").addEventListener("click", () => {
-  winKlasifikasi.hidden = true;
-  winKlasifikasi.style.display = "none";
-  winKlasifikasi.classList.remove("focused");
-  if (taskBtnKlasifikasi) taskBtnKlasifikasi.classList.remove("active");
-});
+  if (winPublikasi) {
+    winPublikasi.classList.toggle("maximized");
+  }
+}
+
+function closePublikasi() {
+  if (winPublikasi) {
+    winPublikasi.hidden = true;
+    winPublikasi.style.display = "none";
+    winPublikasi.classList.remove("focused");
+    winPublikasi.classList.remove("minimized");
+  }
+  if (taskBtnPublikasi) taskBtnPublikasi.classList.remove("active");
+}
+window.minimizePublikasi = minimizePublikasi;
+window.maximizePublikasi = maximizePublikasi;
+window.closePublikasi = closePublikasi;
+
+const btnPubMin = $("btn-pub-min");
+const btnPubMax = $("btn-pub-max");
+const btnPubClose = $("btn-pub-close");
+
+if (btnPubMin) {
+  btnPubMin.addEventListener("mousedown", (e) => e.stopPropagation());
+  btnPubMin.addEventListener("click", (e) => {
+    e.stopPropagation();
+    minimizePublikasi();
+  });
+}
+
+if (btnPubMax) {
+  btnPubMax.addEventListener("mousedown", (e) => e.stopPropagation());
+  btnPubMax.addEventListener("click", (e) => {
+    e.stopPropagation();
+    maximizePublikasi();
+  });
+}
+
+if (btnPubClose) {
+  btnPubClose.addEventListener("mousedown", (e) => e.stopPropagation());
+  btnPubClose.addEventListener("click", (e) => {
+    e.stopPropagation();
+    closePublikasi();
+  });
+}
+
+/* Salin Format Sitasi Naskah */
+const CITATION_APA = `Saturnsz, et al. (2026). Klasifikasi Wilayah Pemadaman Kebakaran Hutan dan Lahan di Kalimantan Menggunakan Algoritma Gaussian Naive Bayes Berbasis Citra Satelit NASA FIRMS (MODIS). JUSIFOR (Jurnal Sistem Informasi dan Informatika), On Going (In Review).`;
+
+const CITATION_BIBTEX = `@article{karhutla_jusifor_2026,
+  title = {Klasifikasi Wilayah Pemadaman Kebakaran Hutan dan Lahan di Kalimantan Menggunakan Algoritma Gaussian Naive Bayes Berbasis Citra Satelit NASA FIRMS (MODIS)},
+  author = {Saturnsz and Tim Peneliti},
+  journal = {JUSIFOR (Jurnal Sistem Informasi dan Informatika)},
+  year = {2026},
+  note = {Status: On Going / In Review (Target SINTA 4)}
+}`;
+
+async function copyCitation(type) {
+  const text = type === "bib" ? CITATION_BIBTEX : CITATION_APA;
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    }
+    showDialog("Sitasi Disalin", `Sitasi format ${type.toUpperCase()} berhasil disalin ke clipboard!`, "info");
+    setStatus(`Sitasi format ${type.toUpperCase()} disalin`);
+  } catch (err) {
+    showDialog("Gagal Menyalin", "Tidak dapat menyalin sitasi otomatis. Silakan salin manual dari teks naskah.", "error");
+  }
+}
+
+if ($("btn-copy-apa")) {
+  $("btn-copy-apa").addEventListener("click", () => copyCitation("apa"));
+}
+if ($("btn-copy-bib")) {
+  $("btn-copy-bib").addEventListener("click", () => copyCitation("bib"));
+}
 
 function applyPreset(name) {
   const p = PRESETS[name];
@@ -289,10 +438,53 @@ function applyPreset(name) {
 
 function runAction(action) {
   closeMenus();
-  if (action === "open-klasifikasi") return focusWindow("klasifikasi");
-  if (action === "open-eda") return focusWindow("eda");
+  if (action === "open-klasifikasi") return openFeature("klasifikasi");
+  if (action === "open-eda") return openFeature("eda");
+  if (action === "open-publikasi") return openFeature("publikasi");
+  if (action === "close-klasifikasi") {
+    if (winKlasifikasi) {
+      winKlasifikasi.hidden = true;
+      winKlasifikasi.style.display = "none";
+      winKlasifikasi.classList.remove("focused");
+      winKlasifikasi.classList.remove("minimized");
+    }
+    if (taskBtnKlasifikasi) taskBtnKlasifikasi.classList.remove("active");
+    return;
+  }
+  if (action === "close-eda") {
+    if (winEda) {
+      winEda.hidden = true;
+      winEda.style.display = "none";
+      winEda.classList.remove("focused");
+      winEda.classList.remove("minimized");
+    }
+    if (taskBtnEda) taskBtnEda.classList.remove("active");
+    return;
+  }
+  if (action === "close-publikasi") return closePublikasi();
+  if (action === "copy-citation-apa") return copyCitation("apa");
+  if (action === "copy-citation-bib") return copyCitation("bib");
+  if (action === "open-sinta-portal") {
+    window.open("https://sinta.kemdikbud.go.id/", "_blank", "noopener,noreferrer");
+    return;
+  }
+  if (action === "open-jusifor-info") {
+    showDialog(
+      "Informasi Jurnal JUSIFOR",
+      "JUSIFOR (Jurnal Sistem Informasi dan Informatika) adalah jurnal ilmiah terakreditasi SINTA Peringkat 4 oleh Kemendikbudristek RI. Publikasi sistem ini sedang dalam proses review dan persiapan penerbitan naskah (On Going / Coming Soon).",
+      "info"
+    );
+    return;
+  }
+  if (action === "about-pub") {
+    return showDialog(
+      "Tentang Publikasi SINTA 4",
+      "Naskah ilmiah ini mendokumentasikan metodologi riset, dataset satelit NASA FIRMS MODIS (24.414 observasi Kalimantan), algoritma Gaussian Naive Bayes, serta implementasi sistem cerdas ini.\nStatus saat ini: On Going / Coming Soon.",
+      "info"
+    );
+  }
   if (action.startsWith("tab-")) {
-    focusWindow("klasifikasi");
+    openFeature("klasifikasi");
     return activateTab(action.slice(4));
   }
   if (action.startsWith("preset-")) return applyPreset(action.slice(7));
@@ -552,6 +744,7 @@ function updateAuthUI() {
     openFeature("klasifikasi");
     if (taskBtnKlasifikasi) taskBtnKlasifikasi.disabled = false;
     if (taskBtnEda) taskBtnEda.disabled = false;
+    if (taskBtnPublikasi) taskBtnPublikasi.disabled = false;
     if (userDisplay) userDisplay.textContent = "Administrator (admin)";
     if (statusUser) statusUser.textContent = "👤 Admin: Aktif";
   } else {
@@ -563,11 +756,19 @@ function updateAuthUI() {
       winKlasifikasi.hidden = true;
       winKlasifikasi.style.display = "none";
       winKlasifikasi.classList.remove("focused");
+      winKlasifikasi.classList.remove("minimized");
     }
     if (winEda) {
       winEda.hidden = true;
       winEda.style.display = "none";
       winEda.classList.remove("focused");
+      winEda.classList.remove("minimized");
+    }
+    if (winPublikasi) {
+      winPublikasi.hidden = true;
+      winPublikasi.style.display = "none";
+      winPublikasi.classList.remove("focused");
+      winPublikasi.classList.remove("minimized");
     }
     if (taskBtnKlasifikasi) {
       taskBtnKlasifikasi.classList.remove("active");
@@ -576,6 +777,10 @@ function updateAuthUI() {
     if (taskBtnEda) {
       taskBtnEda.classList.remove("active");
       taskBtnEda.disabled = true;
+    }
+    if (taskBtnPublikasi) {
+      taskBtnPublikasi.classList.remove("active");
+      taskBtnPublikasi.disabled = true;
     }
     if (userDisplay) userDisplay.textContent = "Tamu (Belum Masuk)";
     if (statusUser) statusUser.textContent = "🔒 Terkunci";
