@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Klasifikasi Wilayah Pemadaman Karhutla Kalimantan</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div class="desktop">
+
+    <!-- ================= JENDELA UTAMA ================= -->
+    <section class="window" id="main-window" aria-labelledby="win-title">
+      <header class="titlebar">
+        <span class="title-icon" aria-hidden="true"></span>
+        <h1 id="win-title">Klasifikasi Wilayah Pemadaman Karhutla di Kalimantan</h1>
+        <div class="controls">
+          <button type="button" class="ctl ctl-min" id="btn-min" aria-label="Minimalkan"></button>
+          <button type="button" class="ctl ctl-max" id="btn-max" aria-label="Maksimalkan"></button>
+          <button type="button" class="ctl ctl-close" id="btn-close" aria-label="Tutup">&#10005;</button>
+        </div>
+      </header>
+
+      <nav class="menubar" aria-label="Menu aplikasi">
+        <div class="menu">
+          <button type="button" data-menu="m-berkas">Berkas</button>
+          <ul class="dropdown" id="m-berkas" hidden>
+            <li><button type="button" data-action="preset-palangkaraya">Contoh: Palangkaraya</button></li>
+            <li><button type="button" data-action="preset-pontianak">Contoh: Pontianak</button></li>
+            <li><button type="button" data-action="sample-csv">Unduh contoh CSV</button></li>
+            <li class="sep"></li>
+            <li><button type="button" data-action="clear-history">Hapus riwayat</button></li>
+            <li class="sep"></li>
+            <li><button type="button" data-action="exit">Keluar</button></li>
+          </ul>
+        </div>
+        <div class="menu">
+          <button type="button" data-menu="m-lihat">Lihat</button>
+          <ul class="dropdown" id="m-lihat" hidden>
+            <li><button type="button" data-action="tab-single">Klasifikasi Tunggal</button></li>
+            <li><button type="button" data-action="tab-batch">Klasifikasi CSV</button></li>
+            <li><button type="button" data-action="tab-history">Riwayat</button></li>
+            <li><button type="button" data-action="tab-model">Informasi Model</button></li>
+          </ul>
+        </div>
+        <div class="menu">
+          <button type="button" data-menu="m-bantuan">Bantuan</button>
+          <ul class="dropdown" id="m-bantuan" hidden>
+            <li><button type="button" data-action="about">Tentang Aplikasi ini</button></li>
+          </ul>
+        </div>
+      </nav>
+
+      <div class="banner">
+        <div class="banner-icon" aria-hidden="true">🌲</div>
+        <p>
+          Masukkan data titik panas satelit <strong>NASA FIRMS (MODIS)</strong> untuk mengetahui apakah wilayah
+          berstatus <strong class="t-red">DARURAT</strong> (prioritas pemadaman) atau
+          <strong class="t-green">AMAN</strong> (terkendali).
+        </p>
+      </div>
+
+      <div class="window-body">
+        <!-- ======== KIRI: TAB ======== -->
+        <div class="left">
+          <div class="tabs" role="tablist">
+            <button type="button" role="tab" class="tab active" data-tab="single" aria-selected="true">Tunggal</button>
+            <button type="button" role="tab" class="tab" data-tab="batch" aria-selected="false">CSV</button>
+            <button type="button" role="tab" class="tab" data-tab="history" aria-selected="false">Riwayat</button>
+            <button type="button" role="tab" class="tab" data-tab="model" aria-selected="false">Model</button>
+          </div>
+
+          <div class="tab-panels">
+            <!-- TAB: TUNGGAL -->
+            <div class="panel" id="tab-single" role="tabpanel">
+              <form id="predict-form" novalidate>
+                <fieldset>
+                  <legend>Koordinat</legend>
+                  <div class="row">
+                    <label>Latitude
+                      <input type="number" id="latitude" step="any" min="-4.5" max="4.5" placeholder="-2.20" required />
+                      <small>-4.5 s.d. 4.5</small>
+                    </label>
+                    <label>Longitude
+                      <input type="number" id="longitude" step="any" min="108.5" max="119.5" placeholder="113.91"
+                        required />
+                      <small>108.5 s.d. 119.5</small>
+                    </label>
+                  </div>
+                </fieldset>
+
+                <fieldset>
+                  <legend>Data Sensor Satelit</legend>
+                  <div class="row">
+                    <label>Brightness (Kelvin)
+                      <input type="number" id="brightness" step="any" min="250" max="520" placeholder="350.5"
+                        required />
+                      <small>250 s.d. 520</small>
+                    </label>
+                    <label>Confidence (%)
+                      <input type="number" id="confidence" step="any" min="80" max="100" placeholder="100" required />
+                      <small>80 s.d. 100</small>
+                    </label>
+                  </div>
+                </fieldset>
+
+                <p id="form-error" class="inline-error" role="alert" hidden></p>
+
+                <div class="btn-row">
+                  <button type="submit" id="btn-predict" class="xp-btn default">Klasifikasikan</button>
+                  <button type="button" class="xp-btn" data-preset="palangkaraya">Contoh Palangkaraya</button>
+                  <button type="button" class="xp-btn" data-preset="pontianak">Contoh Pontianak</button>
+                </div>
+                <p class="hint">Tip: klik peta di sebelah kanan untuk mengisi latitude dan longitude.</p>
+              </form>
+
+              <div id="result" hidden aria-live="polite"></div>
+            </div>
+
+            <!-- TAB: CSV -->
+            <div class="panel" id="tab-batch" role="tabpanel" hidden>
+              <fieldset>
+                <legend>Unggah Berkas CSV</legend>
+                <p>Header wajib: <code>latitude,longitude,brightness,confidence</code> (maksimal 500 baris). Hasil
+                  diurutkan dari probabilitas darurat tertinggi.</p>
+                <input type="file" id="csv-file" accept=".csv,text/csv" />
+                <div class="btn-row">
+                  <button type="button" id="btn-batch" class="xp-btn default">Proses CSV</button>
+                  <button type="button" id="btn-sample" class="xp-btn">Unduh contoh CSV</button>
+                </div>
+              </fieldset>
+              <p id="batch-error" class="inline-error" role="alert" hidden></p>
+              <div id="batch-summary" class="summary" hidden></div>
+              <div class="listview">
+                <table id="batch-table" hidden>
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Lat</th>
+                      <th>Lon</th>
+                      <th>Brightness</th>
+                      <th>Conf.</th>
+                      <th>Status</th>
+                      <th>P(Darurat)</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- TAB: RIWAYAT -->
+            <div class="panel" id="tab-history" role="tabpanel" hidden>
+              <div class="btn-row top">
+                <button type="button" id="btn-clear" class="xp-btn">Hapus riwayat</button>
+              </div>
+              <ul id="history" class="history"></ul>
+              <p id="history-empty" class="hint">Belum ada riwayat klasifikasi.</p>
+            </div>
+
+            <!-- TAB: MODEL -->
+            <div class="panel" id="tab-model" role="tabpanel" hidden>
+              <div id="model-info" class="hint">Memuat informasi model...</div>
+              <div class="listview">
+                <table id="compare-table" hidden>
+                  <thead>
+                    <tr>
+                      <th>Model</th>
+                      <th>Acc (%)</th>
+                      <th>SST (%)</th>
+                      <th>SPF (%)</th>
+                      <th>Kappa</th>
+                      <th>RMSE</th>
+                      <th>AUC</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ======== KANAN: PETA ======== -->
+        <div class="right">
+          <fieldset class="map-box">
+            <legend>Peta Kalimantan</legend>
+            <div id="map"></div>
+            <div class="legend">
+              <span><i class="dot red"></i> Darurat</span>
+              <span><i class="dot green"></i> Aman</span>
+              <span><i class="dot dash"></i> Batas wilayah model</span>
+            </div>
+          </fieldset>
+        </div>
+      </div>
+
+      <footer class="statusbar">
+        <span class="cell grow" id="status-text">Siap</span>
+        <span class="cell"><span class="progress" id="progress" hidden><i></i></span></span>
+        <span class="cell" id="status-api">API: memeriksa...</span>
+      </footer>
+    </section>
+
+    <!-- ================= START MENU ================= -->
+    <div class="start-menu" id="start-menu" hidden>
+      <div class="sm-head"><span class="avatar">👨‍🚒</span> Operator Pemadam</div>
+      <ul class="sm-list">
+        <li><button type="button" data-action="tab-single">🔥 Klasifikasi Tunggal</button></li>
+        <li><button type="button" data-action="tab-batch">📄 Klasifikasi CSV</button></li>
+        <li><button type="button" data-action="tab-history">🕘 Riwayat</button></li>
+        <li><button type="button" data-action="tab-model">📊 Informasi Model</button></li>
+        <li class="sep"></li>
+        <li><button type="button" data-action="about">❓ Tentang Aplikasi</button></li>
+      </ul>
+      <div class="sm-foot"><button type="button" data-action="exit">⏻ Tutup Aplikasi</button></div>
+    </div>
+
+    <!-- ================= TASKBAR ================= -->
+    <footer class="taskbar">
+      <button type="button" class="start-btn" id="start-btn" aria-haspopup="true">
+        <span class="flag" aria-hidden="true"></span><em>start</em>
+      </button>
+      <button type="button" class="task-btn active" id="task-btn">🔥 Klasifikasi Karhutla</button>
+      <div class="tray"><span aria-hidden="true">🛰️</span> <time id="clock">--.--</time></div>
+    </footer>
+
+    <!-- ================= DIALOG ================= -->
+    <div class="overlay" id="overlay" hidden>
+      <div class="window dialog" role="alertdialog" aria-labelledby="dlg-title" aria-describedby="dlg-text">
+        <header class="titlebar">
+          <h1 id="dlg-title">Pesan</h1>
+          <div class="controls"><button type="button" class="ctl ctl-close" id="dlg-x"
+              aria-label="Tutup">&#10005;</button></div>
+        </header>
+        <div class="dlg-body">
+          <span class="msg-icon info" id="dlg-icon" aria-hidden="true">i</span>
+          <p id="dlg-text"></p>
+        </div>
+        <div class="btn-row center"><button type="button" class="xp-btn default" id="dlg-ok">OK</button></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="script.js"></script>
+</body>
+
+</html>

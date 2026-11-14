@@ -1,0 +1,47 @@
+{
+  "model_name": "Gaussian Naive Bayes",
+  "features": ["latitude", "longitude", "brightness", "confidence"],
+  "classes": {"0": "AMAN", "1": "DARURAT"},
+  "frp_threshold_mw": 30,
+  "train_size": null,
+  "test_size": null,
+  "comparison": [
+    {
+      "model": "Decision Tree (DT)",
+      "accuracy": 82.09,
+      "sensitivity": 70.53,
+      "specificity": 94.79,
+      "precision": 93.70,
+      "f1": 80.48,
+      "kappa": 0.645,
+      "rmse": 0.351,
+      "auc": 0.888,
+      "ap": 91.52
+    },
+    {
+      "model": "Logistic Regression (MLR)",
+      "accuracy": 81.19,
+      "sensitivity": 79.45,
+      "specificity": 83.09,
+      "precision": 83.78,
+      "f1": 81.56,
+      "kappa": 0.624,
+      "rmse": 0.361,
+      "auc": 0.888,
+      "ap": 92.42
+    },
+    {
+      "model": "Naive Bayes (NB)",
+      "accuracy": 82.74,
+      "sensitivity": 73.72,
+      "specificity": 92.66,
+      "precision": 91.70,
+      "f1": 81.73,
+      "kappa": 0.657,
+      "rmse": 0.355,
+      "auc": 0.884,
+      "ap": 92.22
+    }
+  ]
+}
+
