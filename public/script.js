@@ -119,8 +119,10 @@ document.querySelectorAll(".tab").forEach((t) =>
 /* ======================= MANAJEMEN JENDELA & MENU XP ======================= */
 const winKlasifikasi = $("main-window");
 const winEda = $("eda-window");
+const winPublikasi = $("pub-window");
 const taskBtnKlasifikasi = $("task-btn-klasifikasi");
 const taskBtnEda = $("task-btn-eda");
+const taskBtnPublikasi = $("task-btn-publikasi");
 
 function openFeature(target) {
   if (!isLoggedIn()) return;
@@ -140,8 +142,16 @@ function openFeature(target) {
         winEda.style.display = "none";
       }
     }
+    if (winPublikasi) {
+      winPublikasi.classList.remove("focused");
+      if (isMobile) {
+        winPublikasi.hidden = true;
+        winPublikasi.style.display = "none";
+      }
+    }
     if (taskBtnKlasifikasi) taskBtnKlasifikasi.classList.add("active");
     if (taskBtnEda) taskBtnEda.classList.remove("active");
+    if (taskBtnPublikasi) taskBtnPublikasi.classList.remove("active");
     if (isMobile) {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -161,13 +171,48 @@ function openFeature(target) {
         winKlasifikasi.style.display = "none";
       }
     }
+    if (winPublikasi) {
+      winPublikasi.classList.remove("focused");
+      if (isMobile) {
+        winPublikasi.hidden = true;
+        winPublikasi.style.display = "none";
+      }
+    }
     if (taskBtnEda) taskBtnEda.classList.add("active");
     if (taskBtnKlasifikasi) taskBtnKlasifikasi.classList.remove("active");
+    if (taskBtnPublikasi) taskBtnPublikasi.classList.remove("active");
     if (isMobile) {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
     if (typeof window.edaInit === "function") window.edaInit();
     if (typeof window.edaInvalidateMap === "function") window.edaInvalidateMap();
+  } else if (target === "publikasi") {
+    if (winPublikasi) {
+      winPublikasi.hidden = false;
+      winPublikasi.style.display = "";
+      winPublikasi.classList.remove("minimized");
+      winPublikasi.classList.add("focused");
+    }
+    if (winKlasifikasi) {
+      winKlasifikasi.classList.remove("focused");
+      if (isMobile) {
+        winKlasifikasi.hidden = true;
+        winKlasifikasi.style.display = "none";
+      }
+    }
+    if (winEda) {
+      winEda.classList.remove("focused");
+      if (isMobile) {
+        winEda.hidden = true;
+        winEda.style.display = "none";
+      }
+    }
+    if (taskBtnPublikasi) taskBtnPublikasi.classList.add("active");
+    if (taskBtnKlasifikasi) taskBtnKlasifikasi.classList.remove("active");
+    if (taskBtnEda) taskBtnEda.classList.remove("active");
+    if (isMobile) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   }
 }
 window.openFeature = openFeature;
@@ -179,9 +224,15 @@ if (taskBtnKlasifikasi) {
 if (taskBtnEda) {
   taskBtnEda.addEventListener("click", () => openFeature("eda"));
 }
+if (taskBtnPublikasi) {
+  taskBtnPublikasi.addEventListener("click", () => openFeature("publikasi"));
+}
 
 if (winKlasifikasi) {
   winKlasifikasi.addEventListener("mousedown", () => openFeature("klasifikasi"));
+}
+if (winPublikasi) {
+  winPublikasi.addEventListener("mousedown", () => openFeature("publikasi"));
 }
 
 function closeMenus() {

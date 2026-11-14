@@ -33,6 +33,7 @@
             <li><button type="button" data-action="sample-csv">Unduh contoh CSV</button></li>
             <li class="sep"></li>
             <li><button type="button" data-action="open-eda">📊 Buka Eksplorasi Data (EDA)</button></li>
+            <li><button type="button" data-action="open-publikasi">📜 Buka Publikasi SINTA 4</button></li>
             <li class="sep"></li>
             <li><button type="button" data-action="clear-history">Hapus riwayat</button></li>
             <li class="sep"></li>
@@ -49,6 +50,7 @@
             <li><button type="button" data-action="tab-model">Informasi Model</button></li>
             <li class="sep"></li>
             <li><button type="button" data-action="open-eda">📊 Buka Eksplorasi Data (EDA)</button></li>
+            <li><button type="button" data-action="open-publikasi">📜 Buka Publikasi SINTA 4</button></li>
           </ul>
         </div>
         <div class="menu">
@@ -231,6 +233,7 @@
             <li><button type="button" data-action="download-eda-json">💾 Unduh eda_data.json</button></li>
             <li class="sep"></li>
             <li><button type="button" data-action="open-klasifikasi">🔥 Buka Klasifikasi Karhutla</button></li>
+            <li><button type="button" data-action="open-publikasi">📜 Buka Publikasi SINTA 4</button></li>
             <li class="sep"></li>
             <li><button type="button" data-action="logout">🔒 Log Off (admin)</button></li>
             <li><button type="button" data-action="exit">Keluar</button></li>
@@ -310,12 +313,175 @@
       </footer>
     </section>
 
+    <!-- ================= FITUR 3: JENDELA PUBLIKASI ILMIAH SINTA 4 ================= -->
+    <section class="window" id="pub-window" aria-labelledby="pub-win-title" hidden style="display: none;">
+      <header class="titlebar">
+        <span class="title-icon" aria-hidden="true">📜</span>
+        <h1 id="pub-win-title">Informasi Publikasi Jurnal SINTA 4 (JUSIFOR) - On Going</h1>
+        <div class="controls">
+          <button type="button" class="ctl ctl-min" id="btn-pub-min" aria-label="Minimalkan"></button>
+          <button type="button" class="ctl ctl-max" id="btn-pub-max" aria-label="Maksimalkan"></button>
+          <button type="button" class="ctl ctl-close" id="btn-pub-close" aria-label="Tutup">&#10005;</button>
+        </div>
+      </header>
+
+      <nav class="menubar" aria-label="Menu Publikasi">
+        <div class="menu">
+          <button type="button" data-menu="m-pub-berkas">Berkas</button>
+          <ul class="dropdown" id="m-pub-berkas" hidden>
+            <li><button type="button" data-action="copy-citation-apa">📋 Salin Format Sitasi (APA)</button></li>
+            <li><button type="button" data-action="copy-citation-bib">📋 Salin Format BibTeX</button></li>
+            <li class="sep"></li>
+            <li><button type="button" data-action="open-klasifikasi">🔥 Buka Klasifikasi Karhutla</button></li>
+            <li><button type="button" data-action="open-eda">📊 Buka Eksplorasi Data (EDA)</button></li>
+            <li class="sep"></li>
+            <li><button type="button" data-action="logout">🔒 Log Off (admin)</button></li>
+            <li><button type="button" data-action="exit">Keluar</button></li>
+          </ul>
+        </div>
+        <div class="menu">
+          <button type="button" data-menu="m-pub-tautan">Tautan Jurnal</button>
+          <ul class="dropdown" id="m-pub-tautan" hidden>
+            <li><button type="button" data-action="open-sinta-portal">🌐 Portal SINTA Kemendikbud</button></li>
+            <li><button type="button" data-action="open-jusifor-info">📖 Info Jurnal JUSIFOR</button></li>
+          </ul>
+        </div>
+        <div class="menu">
+          <button type="button" data-menu="m-pub-bantuan">Bantuan</button>
+          <ul class="dropdown" id="m-pub-bantuan" hidden>
+            <li><button type="button" data-action="about-pub">Tentang Publikasi Ini</button></li>
+          </ul>
+        </div>
+      </nav>
+
+      <div class="banner">
+        <div class="banner-icon" aria-hidden="true">🎓</div>
+        <p>
+          Informasi publikasi riset ilmiah sistem ini pada <strong>Jurnal Ilmiah Terakreditasi Nasional SINTA 4 (JUSIFOR)</strong>.
+          Status artikel saat ini: <strong class="badge-status-banner">⏳ ON GOING / COMING SOON</strong>.
+        </p>
+      </div>
+
+      <div class="window-body pub-body">
+        <!-- KIRI: INFORMASI UTAMA & ABSTRAK -->
+        <div class="pub-left">
+          <fieldset>
+            <legend>Identitas Naskah Ilmiah</legend>
+            <div class="pub-badge-row">
+              <span class="pub-badge sinta">🏆 Target: SINTA 4</span>
+              <span class="pub-badge ongoing">⏳ Status: ON GOING</span>
+              <span class="pub-badge coming">🚀 Coming Soon</span>
+            </div>
+
+            <div class="pub-detail-list">
+              <div class="pub-item">
+                <span class="pub-label">Judul Artikel:</span>
+                <p class="pub-title-text">
+                  <strong>"Klasifikasi Wilayah Pemadaman Kebakaran Hutan dan Lahan di Kalimantan Menggunakan Algoritma Gaussian Naive Bayes Berbasis Citra Satelit NASA FIRMS (MODIS)"</strong>
+                </p>
+              </div>
+
+              <div class="pub-item">
+                <span class="pub-label">Target Jurnal:</span>
+                <p><strong>Jurnal JUSIFOR (Jurnal Sistem Informasi dan Informatika)</strong> &mdash; Terakreditasi <strong>SINTA Peringkat 4</strong> (Kemendikbudristek RI).</p>
+              </div>
+
+              <div class="pub-item">
+                <span class="pub-label">Bidang Ilmu &amp; Fokus:</span>
+                <p>Kecerdasan Buatan (Machine Learning), Penginderaan Jauh Geospasial, Tanggap Darurat Bencana Karhutla Kalimantan.</p>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Ringkasan Naskah (Abstract Preview)</legend>
+            <div class="abstract-box">
+              <p>
+                <strong>Abstrak:</strong> Bencana kebakaran hutan dan lahan (karhutla) tahunan di Kalimantan menimbulkan dampak ekologis dan kabut asap pekat. Penelitian ini mengembangkan model kecerdasan buatan untuk mengklasifikasikan titik panas satelit NASA FIRMS (sensor MODIS C6.1 NRT periode Agustus&ndash;Oktober 2026, total 24.414 observasi Kalimantan) ke dalam kategori <em>DARURAT (Prioritas Pemadaman)</em> dan <em>AMAN (Terkendali)</em> menggunakan algoritma <strong>Gaussian Naive Bayes</strong>.
+              </p>
+              <p>
+                Fitur masukan meliputi koordinat geografis (<em>latitude, longitude</em>), temperatur kecerahan api (<em>brightness</em>), dan keyakinan deteksi (<em>confidence</em>). Hasil evaluasi menunjukkan model Gaussian Naive Bayes memiliki sensitivitas dan akurasi tinggi serta beban komputasi sangat ringan, menjadikannya ideal untuk diimplementasikan pada arsitektur web serverless real-time bagi Satgas Pemadaman Karhutla di lapangan.
+              </p>
+            </div>
+          </fieldset>
+        </div>
+
+        <!-- KANAN: ROADMAP & PROGRES PUBLIKASI -->
+        <div class="pub-right">
+          <fieldset>
+            <legend>Tahapan Publikasi (Publication Roadmap)</legend>
+            <div class="progress-box">
+              <div class="progress-label-row">
+                <span>Estimasi Tahapan:</span>
+                <strong class="t-ongoing">75% (On Going / Dalam Telaah)</strong>
+              </div>
+              <div class="meter"><span style="width: 75%;"></span></div>
+            </div>
+
+            <ol class="timeline-list">
+              <li class="done">
+                <span class="timeline-icon">✓</span>
+                <div>
+                  <strong>Pengumpulan &amp; Preprocessing Data Satelit</strong>
+                  <small>Filter 24.414 titik MODIS Kalimantan &amp; confidence &ge; 80%</small>
+                </div>
+              </li>
+              <li class="done">
+                <span class="timeline-icon">✓</span>
+                <div>
+                  <strong>Pelatihan &amp; Pengujian Model Naive Bayes</strong>
+                  <small>Evaluasi akurasi, sensitivitas, spesifisitas, dan perbandingan algoritma</small>
+                </div>
+              </li>
+              <li class="done">
+                <span class="timeline-icon">✓</span>
+                <div>
+                  <strong>Pembangunan Aplikasi Web &amp; Modul EDA</strong>
+                  <small>Antarmuka Windows XP, serverless API, Leaflet map spasial</small>
+                </div>
+              </li>
+              <li class="current">
+                <span class="timeline-icon">🔄</span>
+                <div>
+                  <strong>Penyusunan &amp; Submit Naskah (Template JUSIFOR)</strong>
+                  <small class="t-ongoing">Sedang Berjalan (On Going) &mdash; Format Template JUSIFOR SINTA 4</small>
+                </div>
+              </li>
+              <li class="upcoming">
+                <span class="timeline-icon">⏳</span>
+                <div>
+                  <strong>Review, Penerbitan Resmi &amp; DOI</strong>
+                  <small>Coming Soon pada Issue Terbitan Jurnal Terakreditasi</small>
+                </div>
+              </li>
+            </ol>
+          </fieldset>
+
+          <fieldset>
+            <legend>Rujukan &amp; Format Sitasi (Draft)</legend>
+            <p class="hint">Salin draft sitasi naskah untuk rujukan penelitian atau sitasi awal:</p>
+            <div class="btn-row">
+              <button type="button" class="xp-btn" id="btn-copy-apa">📋 Salin Format APA</button>
+              <button type="button" class="xp-btn" id="btn-copy-bib">📋 Salin Format BibTeX</button>
+            </div>
+          </fieldset>
+        </div>
+      </div>
+
+      <footer class="statusbar">
+        <span class="cell grow">Status Publikasi: ⏳ On Going / Coming Soon</span>
+        <span class="cell">🏛️ Target: SINTA 4 (JUSIFOR)</span>
+        <span class="cell">📅 Tahun: 2026</span>
+      </footer>
+    </section>
+
     <!-- ================= START MENU ================= -->
     <div class="start-menu" id="start-menu" hidden>
       <div class="sm-head"><span class="avatar">👨‍💼</span> <span id="user-display">Administrator (admin)</span></div>
       <ul class="sm-list">
         <li><button type="button" data-action="open-klasifikasi">🔥 Klasifikasi Karhutla</button></li>
         <li><button type="button" data-action="open-eda">📊 Eksplorasi Data (EDA)</button></li>
+        <li><button type="button" data-action="open-publikasi">📜 Publikasi Jurnal (SINTA 4)</button></li>
         <li class="sep"></li>
         <li><button type="button" data-action="tab-single">🎯 Klasifikasi Tunggal</button></li>
         <li><button type="button" data-action="tab-batch">📄 Klasifikasi CSV</button></li>
@@ -336,7 +502,8 @@
         <span class="flag" aria-hidden="true"></span><em>start</em>
       </button>
       <div class="task-items" id="task-items">
-        <button type="button" class="task-btn active" id="task-btn-klasifikasi" title="Buka Fitur 1: Klasifikasi Karhutla">
+        <button type="button" class="task-btn active" id="task-btn-klasifikasi"
+          title="Buka Fitur 1: Klasifikasi Karhutla">
           <span class="task-icon" aria-hidden="true">🔥</span>
           <span class="task-text">Klasifikasi Karhutla</span>
         </button>
@@ -344,8 +511,13 @@
           <span class="task-icon" aria-hidden="true">📊</span>
           <span class="task-text">Eksplorasi Data (EDA)</span>
         </button>
+        <button type="button" class="task-btn" id="task-btn-publikasi" title="Buka Fitur 3: Publikasi Jurnal SINTA 4">
+          <span class="task-icon" aria-hidden="true">📜</span>
+          <span class="task-text">Publikasi SINTA 4</span>
+        </button>
       </div>
-      <div class="tray"><span aria-hidden="true" title="Satelit NASA MODIS">🛰️</span> <time id="clock">--.--</time></div>
+      <div class="tray"><span aria-hidden="true" title="Satelit NASA MODIS">🛰️</span> <time id="clock">--.--</time>
+      </div>
     </footer>
 
     <!-- ================= LOGIN DIALOG (LOG ON TO WINDOWS) ================= -->
