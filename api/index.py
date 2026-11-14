@@ -29,8 +29,8 @@ CORS(app)
 # ---------------------------------------------------------------- fallback model (tanpa scikit-learn)
 class StandaloneGaussianNB:
     """
-    Gaussian Naive Bayes murni NumPy — output 100% identik dengan
-    scikit-learn GaussianNB, namun bebas masalah versi pickle/joblib.
+    Gaussian Naive Bayes murni NumPy — output identik dengan
+    scikit-learn GaussianNB, bebas masalah versi pickle/joblib.
     """
     def __init__(self, theta, var, class_prior, classes):
         self.theta = np.array(theta, dtype=float)
@@ -60,7 +60,6 @@ class StandaloneGaussianNB:
 # ---------------------------------------------------------------- model loading
 FEATURES = ["latitude", "longitude", "brightness", "confidence"]
 
-# Parameter model Gaussian NB (diekstrak dari model_karhutla_NB.pkl yang sudah dilatih)
 FALLBACK_PARAMS = {
     "theta": [
         [-1.883041071472961, 113.02468867495335, 320.462048477316, 90.46128029832194],
@@ -80,11 +79,7 @@ MODEL_LOAD_LOG = []
 
 # Muat model_info.json
 MODEL_INFO = {}
-_info_candidates = [
-    BASE_DIR / "model_info.json",
-    Path(os.getcwd()) / "api" / "model_info.json",
-]
-for _ip in _info_candidates:
+for _ip in [BASE_DIR / "model_info.json", Path(os.getcwd()) / "api" / "model_info.json"]:
     if _ip.exists():
         try:
             MODEL_INFO = json.loads(_ip.read_text(encoding="utf-8"))
@@ -94,12 +89,7 @@ for _ip in _info_candidates:
             MODEL_LOAD_LOG.append(f"Gagal baca {_ip}: {e}")
 
 # Strategi 1: Coba load .pkl via joblib
-_pkl_candidates = [
-    BASE_DIR / "model_karhutla_NB.pkl",
-    Path(os.getcwd()) / "api" / "model_karhutla_NB.pkl",
-    Path(os.getcwd()) / "model_karhutla_NB.pkl",
-]
-for _p in _pkl_candidates:
+for _p in [BASE_DIR / "model_karhutla_NB.pkl", Path(os.getcwd()) / "api" / "model_karhutla_NB.pkl"]:
     if _p.exists():
         try:
             import joblib
@@ -119,11 +109,10 @@ if MODEL is None:
             class_prior=p["class_prior"], classes=p["classes"]
         )
         MODEL_SOURCE = "StandaloneGaussianNB (fallback)"
-        MODEL_LOAD_LOG.append("Memakai StandaloneGaussianNB fallback (tanpa pkl)")
+        MODEL_LOAD_LOG.append("Memakai StandaloneGaussianNB fallback")
     except Exception as e:
-        MODEL_LOAD_LOG.append(f"Fallback gagal: {e}\n{traceback.format_exc()}")
+        MODEL_LOAD_LOG.append(f"Fallback gagal: {e}")
 
-# Batas validasi
 LIMITS = {
     "latitude":   (-4.5, 4.5),
     "longitude":  (108.5, 119.5),
@@ -186,6 +175,58 @@ def predict_points(points):
     return [build_result(p, float(pr)) for p, pr in zip(points, probs)]
 
 
+def do_health():
+    return jsonify({
+        "status": "ok",
+        "model_loaded": MODEL is not None,
+        "model_source": MODEL_SOURCE,
+        "python": sys.version,
+        "log": MODEL_LOAD_LOG,
+    })
+
+
+def do_model_info():
+    info_clean = {k: v for k, v in MODEL_INFO.items() if k != "model_params"}
+    return jsonify({"features": FEATURES, "limits": LIMITS, **info_clean})
+
+
+def do_predict():
+    payload = request.get_json(silent=True)
+    if payload is None:
+        return jsonify({"error": "Body JSON tidak valid atau kosong."}), 400
+    point, errors = validate_point(payload)
+    if errors:
+        return jsonify({"error": "Input tidak valid", "detail": errors}), 400
+    return jsonify(predict_points([point])[0])
+
+
+def do_predict_batch():
+    payload = request.get_json(silent=True)
+    items = payload.get("points") if isinstance(payload, dict) else None
+    if not isinstance(items, list) or not items:
+        return jsonify({"error": "Kirim JSON {\"points\": [ ... ]} berisi minimal 1 titik."}), 400
+    if len(items) > MAX_BATCH:
+        return jsonify({"error": f"Maksimal {MAX_BATCH} titik per permintaan."}), 400
+    valid_points, results, skipped = [], [], []
+    for i, item in enumerate(items):
+        point, errors = validate_point(item)
+        if errors:
+            skipped.append({"baris": i + 1, "detail": errors})
+        else:
+            valid_points.append(point)
+    if valid_points:
+        results = predict_points(valid_points)
+        results.sort(key=lambda r: r["probabilitas"]["darurat"], reverse=True)
+    return jsonify({
+        "total_dikirim": len(items),
+        "total_diproses": len(valid_points),
+        "total_darurat": sum(r["label"] == 1 for r in results),
+        "total_aman": sum(r["label"] == 0 for r in results),
+        "dilewati": skipped,
+        "hasil": results,
+    })
+
+
 # ---------------------------------------------------------------- routes
 @app.route("/", methods=["GET"])
 def index():
@@ -198,63 +239,52 @@ def require_model():
         return jsonify({"error": "Model belum tersedia.", "log": MODEL_LOAD_LOG}), 503
 
 
+# ----- Rute standar (berfungsi di lokal / jika Vercel meneruskan path asli) -----
 @app.route("/api/health", methods=["GET"])
 def health():
-    return jsonify({
-        "status": "ok",
-        "model_loaded": MODEL is not None,
-        "model_source": MODEL_SOURCE,
-        "python": sys.version,
-        "log": MODEL_LOAD_LOG,
-    })
-
+    return do_health()
 
 @app.route("/api/model-info", methods=["GET"])
 def model_info():
-    info_clean = {k: v for k, v in MODEL_INFO.items() if k != "model_params"}
-    return jsonify({"features": FEATURES, "limits": LIMITS, **info_clean})
-
+    return do_model_info()
 
 @app.route("/api/predict", methods=["POST"])
 def predict():
-    payload = request.get_json(silent=True)
-    if payload is None:
-        return jsonify({"error": "Body JSON tidak valid atau kosong."}), 400
-    point, errors = validate_point(payload)
-    if errors:
-        return jsonify({"error": "Input tidak valid", "detail": errors}), 400
-    return jsonify(predict_points([point])[0])
-
+    return do_predict()
 
 @app.route("/api/predict-batch", methods=["POST"])
 def predict_batch():
+    return do_predict_batch()
+
+
+# ----- Vercel catch-all: semua request masuk sebagai /api/index -----
+# Vercel merewrite semua path ke /api/index, jadi Flask selalu menerima
+# PATH_INFO = "/api/index". Route ini menangkap request tersebut dan
+# dispatch ke handler yang benar berdasarkan header X-Vercel-Forwarded-For
+# atau berdasarkan method + isi body.
+@app.route("/api/index", methods=["GET", "POST"])
+@app.route("/api/index/<path:subpath>", methods=["GET", "POST"])
+def vercel_catch_all(subpath=""):
+    # Coba deteksi path asli dari header Vercel
+    original = (
+        request.headers.get("X-Invoke-Path")
+        or request.headers.get("X-Matched-Path")
+        or request.headers.get("X-Original-Url")
+        or ""
+    )
+
+    # Tentukan endpoint berdasarkan path asli atau isi request
+    if request.method == "GET":
+        if "model-info" in original:
+            return do_model_info()
+        # Default GET → health
+        return do_health()
+
+    # POST request
     payload = request.get_json(silent=True)
-    items = payload.get("points") if isinstance(payload, dict) else None
-    if not isinstance(items, list) or not items:
-        return jsonify({"error": "Kirim JSON {\"points\": [ ... ]} berisi minimal 1 titik."}), 400
-    if len(items) > MAX_BATCH:
-        return jsonify({"error": f"Maksimal {MAX_BATCH} titik per permintaan."}), 400
-
-    valid_points, results, skipped = [], [], []
-    for i, item in enumerate(items):
-        point, errors = validate_point(item)
-        if errors:
-            skipped.append({"baris": i + 1, "detail": errors})
-        else:
-            valid_points.append(point)
-
-    if valid_points:
-        results = predict_points(valid_points)
-        results.sort(key=lambda r: r["probabilitas"]["darurat"], reverse=True)
-
-    return jsonify({
-        "total_dikirim": len(items),
-        "total_diproses": len(valid_points),
-        "total_darurat": sum(r["label"] == 1 for r in results),
-        "total_aman": sum(r["label"] == 0 for r in results),
-        "dilewati": skipped,
-        "hasil": results,
-    })
+    if isinstance(payload, dict) and "points" in payload:
+        return do_predict_batch()
+    return do_predict()
 
 
 # ---------------------------------------------------------------- error handlers
@@ -262,42 +292,13 @@ def predict_batch():
 def handle_404(e):
     return jsonify({"error": "Endpoint tidak ditemukan.", "path": request.path}), 404
 
-
 @app.errorhandler(405)
 def handle_405(e):
-    return jsonify({
-        "error": f"Method {request.method} tidak diizinkan untuk {request.path}.",
-        "path": request.path,
-        "method": request.method,
-    }), 405
-
+    return jsonify({"error": f"Method {request.method} tidak diizinkan untuk {request.path}."}), 405
 
 @app.errorhandler(Exception)
 def handle_exception(e):
-    return jsonify({
-        "error": "Terjadi kesalahan pada server.",
-        "detail": [str(e)],
-    }), 500
-
-
-# ---------------------------------------------------------------- debug endpoint (hapus setelah deploy berhasil)
-@app.route("/api/debug", methods=["GET", "POST"])
-def debug_info():
-    return jsonify({
-        "path": request.path,
-        "method": request.method,
-        "url": request.url,
-        "base_url": request.base_url,
-        "headers": dict(request.headers),
-        "environ_path_info": request.environ.get("PATH_INFO"),
-        "environ_script_name": request.environ.get("SCRIPT_NAME"),
-        "model_loaded": MODEL is not None,
-        "model_source": MODEL_SOURCE,
-        "base_dir": str(BASE_DIR),
-        "cwd": os.getcwd(),
-        "api_dir_contents": [f.name for f in BASE_DIR.iterdir()] if BASE_DIR.exists() else [],
-        "log": MODEL_LOAD_LOG,
-    })
+    return jsonify({"error": "Terjadi kesalahan pada server.", "detail": [str(e)]}), 500
 
 
 if __name__ == "__main__":
