@@ -25,15 +25,17 @@ body {
   overflow: hidden;
 }
 
-/* ---------- Desktop (nuansa "Bliss") ---------- */
+/* ---------- Desktop ---------- */
 .desktop {
   position: relative;
   height: 100%;
   padding: 14px 14px calc(var(--taskbar-h) + 14px);
-  background:
-    radial-gradient(ellipse 130% 48% at 22% 112%, #5aa72a 0 62%, transparent 62.4%),
-    radial-gradient(ellipse 100% 40% at 92% 118%, #3f8f1c 0 62%, transparent 62.4%),
-    linear-gradient(180deg, #1f5fcf 0%, #4e97ec 45%, #9fcdf6 72%, #d6ebfb 100%);
+  background-color: #1f5fcf;
+  background-image: url("Aura – AI Website Builder.jpg");
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  background-attachment: fixed;
   display: flex;
   justify-content: center;
   align-items: flex-start;
