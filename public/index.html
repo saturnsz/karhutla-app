@@ -12,8 +12,20 @@
 <body>
   <div class="desktop">
 
-    <!-- ================= JENDELA UTAMA ================= -->
-    <section class="window" id="main-window" aria-labelledby="win-title" hidden style="display: none;">
+    <!-- ================= DESKTOP ICONS (WINDOWS XP SHORTCUTS) ================= -->
+    <div class="desktop-icons" id="desktop-icons" hidden style="display: none;">
+      <div class="desktop-icon" id="dicon-klasifikasi" tabindex="0" title="Buka Klasifikasi Karhutla Kalimantan">
+        <span class="dicon-img">🔥</span>
+        <span class="dicon-label">Klasifikasi Karhutla</span>
+      </div>
+      <div class="desktop-icon" id="dicon-eda" tabindex="0" title="Buka Eksplorasi Data Satelit (EDA)">
+        <span class="dicon-img">📊</span>
+        <span class="dicon-label">Eksplorasi Data (EDA)</span>
+      </div>
+    </div>
+
+    <!-- ================= FITUR 1: JENDELA KLASIFIKASI ================= -->
+    <section class="window focused" id="main-window" aria-labelledby="win-title" hidden style="display: none;">
       <header class="titlebar">
         <span class="title-icon" aria-hidden="true">🔥</span>
         <h1 id="win-title">Klasifikasi Wilayah Pemadaman Karhutla di Kalimantan</h1>
@@ -32,6 +44,8 @@
             <li><button type="button" data-action="preset-pontianak">Contoh: Pontianak</button></li>
             <li><button type="button" data-action="sample-csv">Unduh contoh CSV</button></li>
             <li class="sep"></li>
+            <li><button type="button" data-action="open-eda">📊 Buka Eksplorasi Data (EDA)</button></li>
+            <li class="sep"></li>
             <li><button type="button" data-action="clear-history">Hapus riwayat</button></li>
             <li class="sep"></li>
             <li><button type="button" data-action="logout">🔒 Log Off (admin)</button></li>
@@ -45,6 +59,8 @@
             <li><button type="button" data-action="tab-batch">Klasifikasi CSV</button></li>
             <li><button type="button" data-action="tab-history">Riwayat</button></li>
             <li><button type="button" data-action="tab-model">Informasi Model</button></li>
+            <li class="sep"></li>
+            <li><button type="button" data-action="open-eda">📊 Buka Eksplorasi Data (EDA)</button></li>
           </ul>
         </div>
         <div class="menu">
@@ -207,14 +223,115 @@
       </footer>
     </section>
 
+    <!-- ================= FITUR 2: JENDELA EKSPLORASI DATA (EDA) ================= -->
+    <section class="window" id="eda-window" aria-labelledby="eda-win-title" hidden style="display: none;">
+      <header class="titlebar">
+        <span class="title-icon" aria-hidden="true">📊</span>
+        <h1 id="eda-win-title">Eksplorasi Data Satelit Karhutla Kalimantan (EDA)</h1>
+        <div class="controls">
+          <button type="button" class="ctl ctl-min" id="btn-eda-min" aria-label="Minimalkan"></button>
+          <button type="button" class="ctl ctl-max" id="btn-eda-max" aria-label="Maksimalkan"></button>
+          <button type="button" class="ctl ctl-close" id="btn-eda-close" aria-label="Tutup">&#10005;</button>
+        </div>
+      </header>
+
+      <nav class="menubar" aria-label="Menu EDA">
+        <div class="menu">
+          <button type="button" data-menu="m-eda-berkas">Berkas</button>
+          <ul class="dropdown" id="m-eda-berkas" hidden>
+            <li><button type="button" data-action="refresh-eda">🔄 Muat ulang data</button></li>
+            <li><button type="button" data-action="download-eda-json">💾 Unduh eda_data.json</button></li>
+            <li class="sep"></li>
+            <li><button type="button" data-action="open-klasifikasi">🔥 Buka Klasifikasi Karhutla</button></li>
+            <li class="sep"></li>
+            <li><button type="button" data-action="logout">🔒 Log Off (admin)</button></li>
+            <li><button type="button" data-action="exit">Keluar</button></li>
+          </ul>
+        </div>
+        <div class="menu">
+          <button type="button" data-menu="m-eda-analisis">Analisis</button>
+          <ul class="dropdown" id="m-eda-analisis" hidden>
+            <li><button type="button" data-eda-select="ringkasan">1. Ringkasan dataset</button></li>
+            <li><button type="button" data-eda-select="sebaran">2. Peta sebaran titik panas</button></li>
+            <li><button type="button" data-eda-select="heatmap">3. Heatmap kepadatan (area rawan)</button></li>
+            <li><button type="button" data-eda-select="frp">4. Distribusi FRP (&lt; 200 MW)</button></li>
+            <li><button type="button" data-eda-select="siangmalam">5. Siang vs Malam</button></li>
+            <li><button type="button" data-eda-select="tren">6. Tren harian titik panas</button></li>
+            <li><button type="button" data-eda-select="top10">7. Top 10 prioritas pemadaman</button></li>
+            <li><button type="button" data-eda-select="aman10">8. Sampel 10 lokasi aman</button></li>
+          </ul>
+        </div>
+        <div class="menu">
+          <button type="button" data-menu="m-eda-bantuan">Bantuan</button>
+          <ul class="dropdown" id="m-eda-bantuan" hidden>
+            <li><button type="button" data-action="about-eda">Tentang Eksplorasi Data (EDA)</button></li>
+          </ul>
+        </div>
+      </nav>
+
+      <div class="banner">
+        <div class="banner-icon" aria-hidden="true">🛰️</div>
+        <p>
+          Eksplorasi Data Analisis (EDA) dari <strong>24.414 titik panas satelit NASA FIRMS (MODIS C6.1 NRT)</strong>
+          Kalimantan periode Agustus &ndash; Oktober 2026. Analisis statistik spasial, temporal, dan intensitas radiasi api (FRP).
+        </p>
+      </div>
+
+      <div class="window-body">
+        <!-- KIRI: PILIHAN ANALISIS & OUTPUT GRAFIK/TABEL -->
+        <div class="left">
+          <fieldset>
+            <legend>Eksplorasi Data (EDA)</legend>
+            <label for="eda-select">Pilih jenis analisis data:
+              <select id="eda-select" class="xp-select">
+                <option value="ringkasan">1. Ringkasan dataset &amp; 5 baris pertama</option>
+                <option value="sebaran">2. Peta sebaran titik panas (risiko rendah vs tinggi)</option>
+                <option value="heatmap">3. Heatmap kepadatan (area rawan karhutla)</option>
+                <option value="frp">4. Distribusi FRP (kekuatan api &lt; 200 MW)</option>
+                <option value="siangmalam">5. Perbandingan Siang (D) vs Malam (N)</option>
+                <option value="tren">6. Tren titik panas harian &amp; puncak</option>
+                <option value="top10">7. Top 10 lokasi prioritas pemadaman (DARURAT)</option>
+                <option value="aman10">8. Sampel 10 lokasi terkendali (AMAN)</option>
+              </select>
+            </label>
+          </fieldset>
+          <p id="eda-error" class="inline-error" role="alert" hidden></p>
+          <div id="eda-output"></div>
+        </div>
+
+        <!-- KANAN: PETA SPASIAL EDA -->
+        <div class="right">
+          <fieldset class="map-box">
+            <legend>Peta Spasial Kalimantan (EDA)</legend>
+            <div id="eda-map"></div>
+            <div class="legend" id="eda-map-legend">
+              <span><i class="dot red"></i> Darurat</span>
+              <span><i class="dot" style="background:orange"></i> Aman / Terkendali</span>
+              <span><i class="dot dash"></i> Batas Kalimantan</span>
+            </div>
+          </fieldset>
+        </div>
+      </div>
+
+      <footer class="statusbar">
+        <span class="cell grow" id="eda-status-text">Siap</span>
+        <span class="cell" id="eda-status-records">📊 24.414 Titik Panas</span>
+        <span class="cell"><span class="progress" id="eda-progress" hidden><i></i></span></span>
+        <span class="cell" id="eda-status-api">Data: eda_data.json</span>
+      </footer>
+    </section>
+
     <!-- ================= START MENU ================= -->
     <div class="start-menu" id="start-menu" hidden>
       <div class="sm-head"><span class="avatar">👨‍💼</span> <span id="user-display">Administrator (admin)</span></div>
       <ul class="sm-list">
-        <li><button type="button" data-action="tab-single">🔥 Klasifikasi Tunggal</button></li>
+        <li><button type="button" data-action="open-klasifikasi">🔥 Klasifikasi Karhutla</button></li>
+        <li><button type="button" data-action="open-eda">📊 Eksplorasi Data (EDA)</button></li>
+        <li class="sep"></li>
+        <li><button type="button" data-action="tab-single">🎯 Klasifikasi Tunggal</button></li>
         <li><button type="button" data-action="tab-batch">📄 Klasifikasi CSV</button></li>
-        <li><button type="button" data-action="tab-history">🕘 Riwayat</button></li>
-        <li><button type="button" data-action="tab-model">📊 Informasi Model</button></li>
+        <li><button type="button" data-action="tab-history">🕘 Riwayat Klasifikasi</button></li>
+        <li><button type="button" data-action="tab-model">📈 Informasi Model</button></li>
         <li class="sep"></li>
         <li><button type="button" data-action="about">❓ Tentang Aplikasi</button></li>
       </ul>
@@ -229,7 +346,8 @@
       <button type="button" class="start-btn" id="start-btn" aria-haspopup="true">
         <span class="flag" aria-hidden="true"></span><em>start</em>
       </button>
-      <button type="button" class="task-btn active" id="task-btn">🔥 Klasifikasi Karhutla</button>
+      <button type="button" class="task-btn active" id="task-btn-klasifikasi" title="Jendela Klasifikasi Karhutla">🔥 Klasifikasi Karhutla</button>
+      <button type="button" class="task-btn" id="task-btn-eda" title="Jendela Eksplorasi Data (EDA)">📊 Eksplorasi Data (EDA)</button>
       <div class="tray"><span aria-hidden="true">🛰️</span> <time id="clock">--.--</time></div>
     </footer>
 
@@ -254,12 +372,14 @@
         <form id="login-form" class="login-body" novalidate>
           <div class="login-row">
             <label for="login-username">Nama Pengguna:</label>
-            <input type="text" id="login-username" value="admin" placeholder="Masukkan ID / Username" required autocomplete="username" />
+            <input type="text" id="login-username" value="admin" placeholder="Masukkan ID / Username" required
+              autocomplete="username" />
           </div>
 
           <div class="login-row">
             <label for="login-password">Kata Sandi:</label>
-            <input type="password" id="login-password" value="admin" placeholder="Masukkan Password" required autocomplete="current-password" />
+            <input type="password" id="login-password" value="admin" placeholder="Masukkan Password" required
+              autocomplete="current-password" />
           </div>
 
           <p id="login-error" class="inline-error" role="alert" hidden></p>
@@ -282,7 +402,7 @@
       </div>
     </div>
 
-    <!-- ================= DIALOG ================= -->
+    <!-- ================= DIALOG ================= !-- -->
     <div class="overlay" id="overlay" hidden>
       <div class="window dialog" role="alertdialog" aria-labelledby="dlg-title" aria-describedby="dlg-text">
         <header class="titlebar">
@@ -301,6 +421,7 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="script.js"></script>
+  <script src="eda.js"></script>
 </body>
 
 </html>

@@ -52,10 +52,16 @@ body {
   box-shadow: 3px 4px 14px rgba(0, 0, 0, .45);
   display: flex;
   flex-direction: column;
+  position: relative;
+  z-index: 6;
+  margin-bottom: 20px;
+}
+.window.focused {
+  z-index: 10;
 }
 .window.maximized {
   position: fixed; inset: 0 0 var(--taskbar-h) 0;
-  width: auto; border-radius: 0; z-index: 5;
+  width: auto; border-radius: 0; z-index: 25; margin-bottom: 0;
 }
 .window.minimized, .window[hidden] { display: none !important; }
 
@@ -69,6 +75,10 @@ body {
   color: #fff;
   text-shadow: 1px 1px #0f1089;
   user-select: none;
+}
+.window:not(.focused) .titlebar {
+  background: linear-gradient(180deg, #7697c6 0%, #688bbd 50%, #5777a8 100%);
+  text-shadow: none;
 }
 .titlebar h1 {
   flex: 1; margin: 0; min-width: 0;
@@ -486,4 +496,162 @@ tbody tr:hover .tag { color: #fff; }
   justify-content: flex-end;
   margin-top: 14px;
   margin-bottom: 4px;
+}
+
+/* ============================================================
+   Desktop Icons (Windows XP Style)
+   ============================================================ */
+.desktop-icons {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  z-index: 2;
+  user-select: none;
+}
+.desktop-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 78px;
+  padding: 6px 4px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-align: center;
+  border-radius: 3px;
+}
+.desktop-icon:hover {
+  background: rgba(49, 106, 197, 0.35);
+  border: 1px solid rgba(49, 106, 197, 0.7);
+}
+.desktop-icon:active, .desktop-icon:focus {
+  background: rgba(49, 106, 197, 0.6);
+  border: 1px dotted #ffffff;
+  outline: none;
+}
+.dicon-img {
+  font-size: 32px;
+  line-height: 1;
+  filter: drop-shadow(1px 2px 3px rgba(0,0,0,0.6));
+}
+.dicon-label {
+  margin-top: 5px;
+  font-size: 11px;
+  font-family: var(--font);
+  color: #fff;
+  text-shadow: 1px 1px 2px #000, 0 0 5px #000;
+  line-height: 1.25;
+  word-break: break-word;
+}
+
+/* ============================================================
+   Fitur EDA (Exploratory Data Analysis)
+   ============================================================ */
+#eda-map {
+  height: 420px;
+  border: 2px inset #aca899;
+  background: #cfd8e6;
+}
+.window.maximized #eda-map {
+  height: calc(100vh - 330px);
+  min-height: 320px;
+}
+
+.xp-select {
+  width: 100%;
+  margin-top: 4px;
+  padding: 4px 6px;
+  font: 13px var(--font);
+  color: #000;
+  background: #fff;
+  border: 1px solid var(--xp-sunken);
+  border-radius: 0;
+}
+.xp-select:focus {
+  outline: 1px dotted #000;
+  outline-offset: -3px;
+}
+
+#eda-output {
+  margin-top: 10px;
+}
+#eda-output h3 {
+  margin: 14px 0 6px;
+  font: bold 13px var(--font);
+  color: var(--xp-link);
+}
+#eda-output h3:first-child {
+  margin-top: 4px;
+}
+.eda-note {
+  margin: 8px 0;
+  padding: 6px 8px;
+  background: #ffffe1;
+  border: 1px solid #d4c885;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #333;
+}
+
+.eda-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #fff;
+  border: 2px inset #aca899;
+}
+.eda-svg text {
+  font: 10px var(--font);
+  fill: #222;
+}
+.eda-svg .tick {
+  font-size: 10px;
+}
+.eda-svg .lbl {
+  font: bold 11px var(--font);
+}
+.eda-svg .peak {
+  font: bold 11px var(--font);
+}
+.eda-svg .grid {
+  stroke: #ddd;
+  stroke-dasharray: 3 3;
+}
+.eda-svg .axis {
+  stroke: #444;
+}
+
+.heat-legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  margin: 6px 0;
+}
+.heat-legend i {
+  display: block;
+  width: 160px;
+  height: 12px;
+  border: 1px solid #686868;
+  background: linear-gradient(90deg, rgb(254, 229, 217), rgb(153, 0, 13));
+}
+
+.eda-star {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid #000;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font: bold 11px var(--font);
+  box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.5);
+}
+.eda-star.red {
+  background: #e01010;
+}
+.eda-star.green {
+  background: #1f9d36;
 }

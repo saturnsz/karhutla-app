@@ -88,6 +88,17 @@ for _ip in [BASE_DIR / "model_info.json", Path(os.getcwd()) / "api" / "model_inf
         except Exception as e:
             MODEL_LOAD_LOG.append(f"Gagal baca {_ip}: {e}")
 
+# Muat data EDA (hasil model/eda_generate.py)
+EDA = None
+for _ep in [BASE_DIR / "eda_data.json", Path(os.getcwd()) / "api" / "eda_data.json"]:
+    if _ep.exists():
+        try:
+            EDA = json.loads(_ep.read_text(encoding="utf-8"))
+            MODEL_LOAD_LOG.append(f"eda_data.json dimuat dari {_ep}")
+            break
+        except Exception as e:
+            MODEL_LOAD_LOG.append(f"Gagal baca {_ep}: {e}")
+
 # Strategi 1: Coba load .pkl via joblib
 for _p in [BASE_DIR / "model_karhutla_NB.pkl", Path(os.getcwd()) / "api" / "model_karhutla_NB.pkl"]:
     if _p.exists():
@@ -190,6 +201,21 @@ def do_model_info():
     return jsonify({"features": FEATURES, "limits": LIMITS, **info_clean})
 
 
+def do_eda():
+    """Data EDA. Opsional ?section=ringkasan|head5|sebaran|heatmap|frp|siangmalam|tren|top10|aman10"""
+    if EDA is None:
+        return jsonify({"error": "Data EDA belum tersedia. Jalankan model/eda_generate.py lalu letakkan api/eda_data.json."}), 503
+    section = request.args.get("section")
+    if section:
+        if section not in EDA:
+            return jsonify({"error": "Section tidak dikenal.", "tersedia": list(EDA.keys())}), 404
+        body = jsonify({section: EDA[section]})
+    else:
+        body = jsonify(EDA)
+    body.headers["Cache-Control"] = "public, max-age=3600"
+    return body
+
+
 def do_predict():
     payload = request.get_json(silent=True)
     if payload is None:
@@ -250,6 +276,13 @@ def model_info():
     return do_model_info()
 
 
+@app.route("/api/eda", methods=["GET", "OPTIONS"])
+def eda():
+    if request.method == "OPTIONS":
+        return "", 204
+    return do_eda()
+
+
 @app.route("/api/predict", methods=["POST", "OPTIONS"])
 def predict():
     return do_predict()
@@ -278,6 +311,8 @@ def vercel_catch_all(subpath=""):
         return do_predict()
     if "model-info" in target:
         return do_model_info()
+    if "eda" in target:
+        return do_eda()
     if "health" in target:
         return do_health()
 
@@ -290,6 +325,8 @@ def vercel_catch_all(subpath=""):
     ).lower()
     if "model-info" in orig:
         return do_model_info()
+    if "eda" in orig:
+        return do_eda()
     if "health" in orig:
         return do_health()
     if "predict-batch" in orig:
@@ -299,6 +336,8 @@ def vercel_catch_all(subpath=""):
 
     # 3. Fallback cerdas berdasarkan HTTP method & body payload
     if request.method == "GET":
+        if "section" in request.args:
+            return do_eda()
         return do_health()
 
     payload = request.get_json(silent=True)

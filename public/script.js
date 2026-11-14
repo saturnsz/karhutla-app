@@ -2,6 +2,7 @@
 
 // Kosongkan jika frontend & backend satu domain (Flask lokal / Vercel).
 const API_BASE = "";
+window.API_BASE = API_BASE;
 
 const PRESETS = {
   palangkaraya: { latitude: -2.20, longitude: 113.91, brightness: 350.5, confidence: 100 },
@@ -95,6 +96,7 @@ function showDialog(title, text, type = "info") {
   $("overlay").hidden = false;
   $("dlg-ok").focus();
 }
+window.showDialog = showDialog;
 const closeDialog = () => { $("overlay").hidden = true; };
 $("dlg-ok").addEventListener("click", closeDialog);
 $("dlg-x").addEventListener("click", closeDialog);
@@ -114,8 +116,79 @@ document.querySelectorAll(".tab").forEach((t) =>
   t.addEventListener("click", () => activateTab(t.dataset.tab))
 );
 
-/* ======================= MENU, START, JENDELA ======================= */
-const win = $("main-window");
+/* ======================= MANAJEMEN JENDELA & MENU XP ======================= */
+const winKlasifikasi = $("main-window");
+const winEda = $("eda-window");
+const taskBtnKlasifikasi = $("task-btn-klasifikasi");
+const taskBtnEda = $("task-btn-eda");
+const desktopIcons = $("desktop-icons");
+
+function focusWindow(target) {
+  if (!isLoggedIn()) return;
+  if (target === "klasifikasi") {
+    if (winKlasifikasi) {
+      winKlasifikasi.hidden = false;
+      winKlasifikasi.style.display = "";
+      winKlasifikasi.classList.remove("minimized");
+      winKlasifikasi.classList.add("focused");
+    }
+    if (winEda) {
+      winEda.classList.remove("focused");
+    }
+    if (taskBtnKlasifikasi) taskBtnKlasifikasi.classList.add("active");
+    setTimeout(() => { if (typeof map !== "undefined") map.invalidateSize(); }, 60);
+  } else if (target === "eda") {
+    if (winEda) {
+      winEda.hidden = false;
+      winEda.style.display = "";
+      winEda.classList.remove("minimized");
+      winEda.classList.add("focused");
+    }
+    if (winKlasifikasi) {
+      winKlasifikasi.classList.remove("focused");
+    }
+    if (taskBtnEda) taskBtnEda.classList.add("active");
+    if (typeof window.edaInit === "function") window.edaInit();
+    if (typeof window.edaInvalidateMap === "function") window.edaInvalidateMap();
+  }
+}
+window.focusWindow = focusWindow;
+
+function toggleWindow(target) {
+  if (!isLoggedIn()) return;
+  const w = target === "klasifikasi" ? winKlasifikasi : winEda;
+  const tb = target === "klasifikasi" ? taskBtnKlasifikasi : taskBtnEda;
+  if (!w) return;
+  if (w.hidden || w.style.display === "none") {
+    focusWindow(target);
+  } else if (w.classList.contains("minimized")) {
+    focusWindow(target);
+  } else if (w.classList.contains("focused")) {
+    w.classList.add("minimized");
+    w.classList.remove("focused");
+    if (tb) tb.classList.remove("active");
+  } else {
+    focusWindow(target);
+  }
+}
+
+if (taskBtnKlasifikasi) {
+  taskBtnKlasifikasi.addEventListener("click", () => toggleWindow("klasifikasi"));
+}
+if (taskBtnEda) {
+  taskBtnEda.addEventListener("click", () => toggleWindow("eda"));
+}
+
+if (winKlasifikasi) {
+  winKlasifikasi.addEventListener("mousedown", () => focusWindow("klasifikasi"));
+}
+
+if ($("dicon-klasifikasi")) {
+  $("dicon-klasifikasi").addEventListener("click", () => focusWindow("klasifikasi"));
+}
+if ($("dicon-eda")) {
+  $("dicon-eda").addEventListener("click", () => focusWindow("eda"));
+}
 
 function closeMenus() {
   document.querySelectorAll(".dropdown").forEach((d) => (d.hidden = true));
@@ -142,40 +215,41 @@ $("start-btn").addEventListener("click", (e) => {
 });
 document.addEventListener("click", closeMenus);
 
-function restoreWindow() {
-  if (!isLoggedIn()) return;
-  win.classList.remove("minimized");
-  $("task-btn").classList.add("active");
-}
 $("btn-min").addEventListener("click", () => {
   if (!isLoggedIn()) return;
-  win.classList.add("minimized");
-  $("task-btn").classList.remove("active");
-});
-$("task-btn").addEventListener("click", () => {
-  if (!isLoggedIn()) return;
-  if (win.classList.contains("minimized")) restoreWindow();
-  else $("btn-min").click();
+  winKlasifikasi.classList.add("minimized");
+  winKlasifikasi.classList.remove("focused");
+  if (taskBtnKlasifikasi) taskBtnKlasifikasi.classList.remove("active");
 });
 $("btn-max").addEventListener("click", () => {
   if (!isLoggedIn()) return;
-  win.classList.toggle("maximized");
-  setTimeout(() => map.invalidateSize(), 50);
+  winKlasifikasi.classList.toggle("maximized");
+  setTimeout(() => map.invalidateSize(), 60);
 });
-$("btn-close").addEventListener("click", () => runAction("exit"));
+$("btn-close").addEventListener("click", () => {
+  winKlasifikasi.hidden = true;
+  winKlasifikasi.style.display = "none";
+  winKlasifikasi.classList.remove("focused");
+  if (taskBtnKlasifikasi) taskBtnKlasifikasi.classList.remove("active");
+});
 
 function applyPreset(name) {
   const p = PRESETS[name];
   FIELDS.forEach((f) => ($(f).value = p[f]));
   showError($("form-error"), "");
   activateTab("single");
+  focusWindow("klasifikasi");
   setStatus(`Contoh dimuat: ${name}`);
 }
 
 function runAction(action) {
   closeMenus();
-  restoreWindow();
-  if (action.startsWith("tab-")) return activateTab(action.slice(4));
+  if (action === "open-klasifikasi") return focusWindow("klasifikasi");
+  if (action === "open-eda") return focusWindow("eda");
+  if (action.startsWith("tab-")) {
+    focusWindow("klasifikasi");
+    return activateTab(action.slice(4));
+  }
   if (action.startsWith("preset-")) return applyPreset(action.slice(7));
   switch (action) {
     case "logout": return handleLogout();
@@ -422,8 +496,6 @@ function isLoggedIn() {
 function updateAuthUI() {
   const authed = isLoggedIn();
   const loginOverlay = $("login-overlay");
-  const mainWindow = $("main-window");
-  const taskBtn = $("task-btn");
   const userDisplay = $("user-display");
   const statusUser = $("status-user");
 
@@ -432,31 +504,41 @@ function updateAuthUI() {
       loginOverlay.hidden = true;
       loginOverlay.style.display = "none";
     }
-    if (mainWindow) {
-      mainWindow.hidden = false;
-      mainWindow.style.display = "";
-      mainWindow.classList.remove("minimized");
+    if (desktopIcons) {
+      desktopIcons.hidden = false;
+      desktopIcons.style.display = "flex";
     }
-    if (taskBtn) {
-      taskBtn.classList.add("active");
-      taskBtn.disabled = false;
-    }
+    focusWindow("klasifikasi");
+    if (taskBtnKlasifikasi) taskBtnKlasifikasi.disabled = false;
+    if (taskBtnEda) taskBtnEda.disabled = false;
     if (userDisplay) userDisplay.textContent = "Administrator (admin)";
     if (statusUser) statusUser.textContent = "👤 Admin: Aktif";
-    setTimeout(() => { if (typeof map !== "undefined") map.invalidateSize(); }, 50);
-    setTimeout(() => { if (typeof map !== "undefined") map.invalidateSize(); }, 250);
   } else {
     if (loginOverlay) {
       loginOverlay.hidden = false;
       loginOverlay.style.display = "grid";
     }
-    if (mainWindow) {
-      mainWindow.hidden = true;
-      mainWindow.style.display = "none";
+    if (desktopIcons) {
+      desktopIcons.hidden = true;
+      desktopIcons.style.display = "none";
     }
-    if (taskBtn) {
-      taskBtn.classList.remove("active");
-      taskBtn.disabled = true;
+    if (winKlasifikasi) {
+      winKlasifikasi.hidden = true;
+      winKlasifikasi.style.display = "none";
+      winKlasifikasi.classList.remove("focused");
+    }
+    if (winEda) {
+      winEda.hidden = true;
+      winEda.style.display = "none";
+      winEda.classList.remove("focused");
+    }
+    if (taskBtnKlasifikasi) {
+      taskBtnKlasifikasi.classList.remove("active");
+      taskBtnKlasifikasi.disabled = true;
+    }
+    if (taskBtnEda) {
+      taskBtnEda.classList.remove("active");
+      taskBtnEda.disabled = true;
     }
     if (userDisplay) userDisplay.textContent = "Tamu (Belum Masuk)";
     if (statusUser) statusUser.textContent = "🔒 Terkunci";
