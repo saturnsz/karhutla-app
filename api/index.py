@@ -94,7 +94,7 @@ for _p in [BASE_DIR / "model_karhutla_NB.pkl", Path(os.getcwd()) / "api" / "mode
         try:
             import joblib
             MODEL = joblib.load(_p)
-            MODEL_SOURCE = f"joblib ({_p})"
+            MODEL_SOURCE = f"joblib ({_p.name})"
             MODEL_LOAD_LOG.append(f"Model dimuat via joblib dari {_p}")
             break
         except Exception as e:
@@ -240,47 +240,67 @@ def require_model():
 
 
 # ----- Rute standar (berfungsi di lokal / jika Vercel meneruskan path asli) -----
-@app.route("/api/health", methods=["GET"])
+@app.route("/api/health", methods=["GET", "OPTIONS"])
 def health():
     return do_health()
 
-@app.route("/api/model-info", methods=["GET"])
+
+@app.route("/api/model-info", methods=["GET", "OPTIONS"])
 def model_info():
     return do_model_info()
 
-@app.route("/api/predict", methods=["POST"])
+
+@app.route("/api/predict", methods=["POST", "OPTIONS"])
 def predict():
     return do_predict()
 
-@app.route("/api/predict-batch", methods=["POST"])
+
+@app.route("/api/predict-batch", methods=["POST", "OPTIONS"])
 def predict_batch():
     return do_predict_batch()
 
 
-# ----- Vercel catch-all: semua request masuk sebagai /api/index -----
-# Vercel merewrite semua path ke /api/index, jadi Flask selalu menerima
-# PATH_INFO = "/api/index". Route ini menangkap request tersebut dan
-# dispatch ke handler yang benar berdasarkan header X-Vercel-Forwarded-For
-# atau berdasarkan method + isi body.
-@app.route("/api/index", methods=["GET", "POST"])
-@app.route("/api/index/<path:subpath>", methods=["GET", "POST"])
+# ----- Vercel catch-all dispatcher -----
+# Vercel rewrite mengarahkan /api/... ke /api/index?path=$1
+# Fungsi ini menangkap path dari query parameter, header Vercel, maupun isi request.
+@app.route("/api/index", methods=["GET", "POST", "OPTIONS"])
+@app.route("/api/index/<path:subpath>", methods=["GET", "POST", "OPTIONS"])
 def vercel_catch_all(subpath=""):
-    # Coba deteksi path asli dari header Vercel
-    original = (
+    if request.method == "OPTIONS":
+        return "", 204
+
+    target = (request.args.get("path") or subpath or "").strip().lower()
+
+    # 1. Cek query param atau subpath (?path=predict, /api/index/predict)
+    if "predict-batch" in target:
+        return do_predict_batch()
+    if "predict" in target:
+        return do_predict()
+    if "model-info" in target:
+        return do_model_info()
+    if "health" in target:
+        return do_health()
+
+    # 2. Cek header Vercel asli
+    orig = (
         request.headers.get("X-Invoke-Path")
         or request.headers.get("X-Matched-Path")
         or request.headers.get("X-Original-Url")
         or ""
-    )
+    ).lower()
+    if "model-info" in orig:
+        return do_model_info()
+    if "health" in orig:
+        return do_health()
+    if "predict-batch" in orig:
+        return do_predict_batch()
+    if "predict" in orig:
+        return do_predict()
 
-    # Tentukan endpoint berdasarkan path asli atau isi request
+    # 3. Fallback cerdas berdasarkan HTTP method & body payload
     if request.method == "GET":
-        if "model-info" in original:
-            return do_model_info()
-        # Default GET → health
         return do_health()
 
-    # POST request
     payload = request.get_json(silent=True)
     if isinstance(payload, dict) and "points" in payload:
         return do_predict_batch()
@@ -292,9 +312,11 @@ def vercel_catch_all(subpath=""):
 def handle_404(e):
     return jsonify({"error": "Endpoint tidak ditemukan.", "path": request.path}), 404
 
+
 @app.errorhandler(405)
 def handle_405(e):
     return jsonify({"error": f"Method {request.method} tidak diizinkan untuk {request.path}."}), 405
+
 
 @app.errorhandler(Exception)
 def handle_exception(e):
