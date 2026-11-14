@@ -2,10 +2,10 @@
 Backend REST API - Klasifikasi Wilayah Pemadaman Karhutla Kalimantan.
 
 Endpoint:
-    GET  /api/health        (dan /health)
-    GET  /api/model-info    (dan /model-info)
-    POST /api/predict       (dan /predict)        -> 1 titik
-    POST /api/predict-batch (dan /predict-batch)  -> banyak titik (maks. 500)
+    GET  /api/health
+    GET  /api/model-info
+    POST /api/predict          -> 1 titik
+    POST /api/predict-batch    -> banyak titik (maks. 500)
 """
 import json
 import os
@@ -26,33 +26,11 @@ app = Flask(__name__, static_folder=str(PUBLIC_DIR), static_url_path="")
 CORS(app)
 
 
-# ---------------------------------------------------------------- vercel middleware
-class VercelPathMiddleware:
-    """
-    Middleware untuk memperbaiki PATH_INFO di Vercel ketika rewrite
-    mengarahkan request ke /api/index.
-    """
-    def __init__(self, wsgi_app):
-        self.wsgi_app = wsgi_app
-
-    def __call__(self, environ, start_response):
-        path = environ.get("PATH_INFO", "")
-        if path in ("/api/index", "/api/index.py"):
-            orig = environ.get("HTTP_X_VERCEL_FORWARDED_PATH") or environ.get("HTTP_X_MATCHED_PATH")
-            if orig:
-                environ["PATH_INFO"] = orig
-        return self.wsgi_app(environ, start_response)
-
-
-app.wsgi_app = VercelPathMiddleware(app.wsgi_app)
-
-
-# ---------------------------------------------------------------- fallback model
+# ---------------------------------------------------------------- fallback model (tanpa scikit-learn)
 class StandaloneGaussianNB:
     """
-    Implementasi Gaussian Naive Bayes murni menggunakan NumPy.
-    Menghasilkan output probabilitas matematis identik dengan scikit-learn GaussianNB,
-    namun bebas dari masalah kompatibilitas versi pickle / joblib / scikit-learn di Vercel.
+    Gaussian Naive Bayes murni NumPy — output 100% identik dengan
+    scikit-learn GaussianNB, namun bebas masalah versi pickle/joblib.
     """
     def __init__(self, theta, var, class_prior, classes):
         self.theta = np.array(theta, dtype=float)
@@ -62,24 +40,27 @@ class StandaloneGaussianNB:
 
     def predict_proba(self, X):
         X = np.asarray(X, dtype=float)
+        if X.ndim == 1:
+            X = X.reshape(1, -1)
         log_probs = []
         for c in range(len(self.class_prior)):
-            l_prior = np.log(self.class_prior[c])
-            l_lik = -0.5 * np.sum(
-                np.log(2.0 * np.pi * self.var[c]) + ((X - self.theta[c]) ** 2) / self.var[c],
+            lp = np.log(self.class_prior[c])
+            ll = -0.5 * np.sum(
+                np.log(2.0 * np.pi * self.var[c])
+                + ((X - self.theta[c]) ** 2) / self.var[c],
                 axis=1
             )
-            log_probs.append(l_prior + l_lik)
+            log_probs.append(lp + ll)
         log_probs = np.array(log_probs).T
-        max_log = np.max(log_probs, axis=1, keepdims=True)
-        exp_probs = np.exp(log_probs - max_log)
-        probs = exp_probs / np.sum(exp_probs, axis=1, keepdims=True)
-        return probs
+        mx = np.max(log_probs, axis=1, keepdims=True)
+        e = np.exp(log_probs - mx)
+        return e / np.sum(e, axis=1, keepdims=True)
 
 
 # ---------------------------------------------------------------- model loading
 FEATURES = ["latitude", "longitude", "brightness", "confidence"]
 
+# Parameter model Gaussian NB (diekstrak dari model_karhutla_NB.pkl yang sudah dilatih)
 FALLBACK_PARAMS = {
     "theta": [
         [-1.883041071472961, 113.02468867495335, 320.462048477316, 90.46128029832194],
@@ -97,6 +78,7 @@ MODEL = None
 MODEL_SOURCE = None
 MODEL_LOAD_LOG = []
 
+# Muat model_info.json
 MODEL_INFO = {}
 _info_candidates = [
     BASE_DIR / "model_info.json",
@@ -106,82 +88,56 @@ for _ip in _info_candidates:
     if _ip.exists():
         try:
             MODEL_INFO = json.loads(_ip.read_text(encoding="utf-8"))
+            MODEL_LOAD_LOG.append(f"model_info.json dimuat dari {_ip}")
             break
         except Exception as e:
             MODEL_LOAD_LOG.append(f"Gagal baca {_ip}: {e}")
 
-# 1. Coba load via joblib
+# Strategi 1: Coba load .pkl via joblib
 _pkl_candidates = [
     BASE_DIR / "model_karhutla_NB.pkl",
     Path(os.getcwd()) / "api" / "model_karhutla_NB.pkl",
     Path(os.getcwd()) / "model_karhutla_NB.pkl",
 ]
-
 for _p in _pkl_candidates:
     if _p.exists():
         try:
             import joblib
             MODEL = joblib.load(_p)
-            MODEL_SOURCE = f"joblib ({_p.name})"
-            MODEL_LOAD_LOG.append(f"Berhasil memuat model dari {_p}")
+            MODEL_SOURCE = f"joblib ({_p})"
+            MODEL_LOAD_LOG.append(f"Model dimuat via joblib dari {_p}")
             break
         except Exception as e:
-            MODEL_LOAD_LOG.append(f"Gagal memuat {_p} via joblib: {e}")
+            MODEL_LOAD_LOG.append(f"Gagal joblib.load({_p}): {e}")
 
-# 2. Jika joblib gagal / file tidak ada, gunakan StandaloneGaussianNB
+# Strategi 2: Fallback ke StandaloneGaussianNB (selalu berhasil)
 if MODEL is None:
     try:
         p = MODEL_INFO.get("model_params", FALLBACK_PARAMS)
         MODEL = StandaloneGaussianNB(
-            theta=p["theta"],
-            var=p["var"],
-            class_prior=p["class_prior"],
-            classes=p["classes"]
+            theta=p["theta"], var=p["var"],
+            class_prior=p["class_prior"], classes=p["classes"]
         )
-        MODEL_SOURCE = "StandaloneGaussianNB (embedded fallback)"
-        MODEL_LOAD_LOG.append("Memakai StandaloneGaussianNB fallback")
+        MODEL_SOURCE = "StandaloneGaussianNB (fallback)"
+        MODEL_LOAD_LOG.append("Memakai StandaloneGaussianNB fallback (tanpa pkl)")
     except Exception as e:
-        MODEL_LOAD_LOG.append(f"Gagal inisialisasi StandaloneGaussianNB: {e}\n{traceback.format_exc()}")
+        MODEL_LOAD_LOG.append(f"Fallback gagal: {e}\n{traceback.format_exc()}")
 
-# Batas validasi (sesuai data latih di notebook)
+# Batas validasi
 LIMITS = {
-    "latitude":   (-4.5, 4.5),      # bounding box Kalimantan
+    "latitude":   (-4.5, 4.5),
     "longitude":  (108.5, 119.5),
-    "brightness": (250.0, 520.0),   # Kelvin, kisaran wajar MODIS
-    "confidence": (80.0, 100.0),    # model dilatih hanya pada confidence >= 80
+    "brightness": (250.0, 520.0),
+    "confidence": (80.0, 100.0),
 }
 MAX_BATCH = 500
 
 
-# ---------------------------------------------------------------- error handlers
-@app.errorhandler(404)
-def handle_404(e):
-    return jsonify({"error": "Endpoint tidak ditemukan.", "path": request.path}), 404
-
-
-@app.errorhandler(500)
-def handle_500(e):
-    return jsonify({
-        "error": "Terjadi kesalahan internal server.",
-        "detail": [str(e)]
-    }), 500
-
-
-@app.errorhandler(Exception)
-def handle_exception(e):
-    return jsonify({
-        "error": "Terjadi kesalahan pada pemrosesan permintaan.",
-        "detail": [str(e)]
-    }), 500
-
-
 # ---------------------------------------------------------------- helper
 def validate_point(data):
-    """Mengembalikan (nilai_bersih, daftar_error)."""
     clean, errors = {}, []
     if not isinstance(data, dict):
         return None, ["Data titik harus berupa objek JSON."]
-
     for field in FEATURES:
         if field not in data:
             errors.append(f"Field '{field}' wajib diisi.")
@@ -191,7 +147,6 @@ def validate_point(data):
         except (TypeError, ValueError):
             errors.append(f"Field '{field}' harus berupa angka.")
             continue
-
         low, high = LIMITS[field]
         if not (low <= value <= high):
             errors.append(f"Field '{field}' harus di antara {low} dan {high}.")
@@ -201,10 +156,8 @@ def validate_point(data):
 
 
 def build_result(point, proba_darurat):
-    """Menyusun respons klasifikasi untuk satu titik."""
     is_darurat = proba_darurat >= 0.5
     confidence_pct = (proba_darurat if is_darurat else 1 - proba_darurat) * 100
-
     if is_darurat:
         status, label = "DARURAT", 1
         action = "Segera kerahkan unit pemadam ke lokasi (prioritas pemadaman)."
@@ -213,7 +166,6 @@ def build_result(point, proba_darurat):
         status, label = "AMAN", 0
         action = "Masukkan ke daftar pantauan satelit rutin."
         potential = "Api kecil, kemungkinan pembakaran lahan lokal."
-
     return {
         "input": point,
         "label": label,
@@ -235,7 +187,7 @@ def predict_points(points):
 
 
 # ---------------------------------------------------------------- routes
-@app.get("/")
+@app.route("/", methods=["GET"])
 def index():
     return app.send_static_file("index.html")
 
@@ -243,43 +195,31 @@ def index():
 @app.before_request
 def require_model():
     if request.method == "POST" and MODEL is None:
-        return jsonify({
-            "error": "Model belum tersedia.",
-            "log": MODEL_LOAD_LOG
-        }), 503
+        return jsonify({"error": "Model belum tersedia.", "log": MODEL_LOAD_LOG}), 503
 
 
 @app.route("/api/health", methods=["GET"])
-@app.route("/health", methods=["GET"])
 def health():
     return jsonify({
         "status": "ok",
         "model_loaded": MODEL is not None,
         "model_source": MODEL_SOURCE,
-        "python_version": sys.version,
-        "log": MODEL_LOAD_LOG
+        "python": sys.version,
+        "log": MODEL_LOAD_LOG,
     })
 
 
 @app.route("/api/model-info", methods=["GET"])
-@app.route("/model-info", methods=["GET"])
 def model_info():
     info_clean = {k: v for k, v in MODEL_INFO.items() if k != "model_params"}
-    return jsonify({
-        "features": FEATURES,
-        "limits": LIMITS,
-        "model_source": MODEL_SOURCE,
-        **info_clean
-    })
+    return jsonify({"features": FEATURES, "limits": LIMITS, **info_clean})
 
 
 @app.route("/api/predict", methods=["POST"])
-@app.route("/predict", methods=["POST"])
 def predict():
     payload = request.get_json(silent=True)
     if payload is None:
         return jsonify({"error": "Body JSON tidak valid atau kosong."}), 400
-
     point, errors = validate_point(payload)
     if errors:
         return jsonify({"error": "Input tidak valid", "detail": errors}), 400
@@ -287,7 +227,6 @@ def predict():
 
 
 @app.route("/api/predict-batch", methods=["POST"])
-@app.route("/predict-batch", methods=["POST"])
 def predict_batch():
     payload = request.get_json(silent=True)
     items = payload.get("points") if isinstance(payload, dict) else None
@@ -315,6 +254,49 @@ def predict_batch():
         "total_aman": sum(r["label"] == 0 for r in results),
         "dilewati": skipped,
         "hasil": results,
+    })
+
+
+# ---------------------------------------------------------------- error handlers
+@app.errorhandler(404)
+def handle_404(e):
+    return jsonify({"error": "Endpoint tidak ditemukan.", "path": request.path}), 404
+
+
+@app.errorhandler(405)
+def handle_405(e):
+    return jsonify({
+        "error": f"Method {request.method} tidak diizinkan untuk {request.path}.",
+        "path": request.path,
+        "method": request.method,
+    }), 405
+
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    return jsonify({
+        "error": "Terjadi kesalahan pada server.",
+        "detail": [str(e)],
+    }), 500
+
+
+# ---------------------------------------------------------------- debug endpoint (hapus setelah deploy berhasil)
+@app.route("/api/debug", methods=["GET", "POST"])
+def debug_info():
+    return jsonify({
+        "path": request.path,
+        "method": request.method,
+        "url": request.url,
+        "base_url": request.base_url,
+        "headers": dict(request.headers),
+        "environ_path_info": request.environ.get("PATH_INFO"),
+        "environ_script_name": request.environ.get("SCRIPT_NAME"),
+        "model_loaded": MODEL is not None,
+        "model_source": MODEL_SOURCE,
+        "base_dir": str(BASE_DIR),
+        "cwd": os.getcwd(),
+        "api_dir_contents": [f.name for f in BASE_DIR.iterdir()] if BASE_DIR.exists() else [],
+        "log": MODEL_LOAD_LOG,
     })
 
 
