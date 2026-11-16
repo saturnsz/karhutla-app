@@ -664,8 +664,10 @@ input:focus {
   background: #dc2626;
 }
 
+.dot.yellow,
 .dot.green {
-  background: #16a34a;
+  background: #d97706;
+  border: 1px solid #92400e;
 }
 
 .dot.dash {
@@ -1278,8 +1280,9 @@ tbody tr:hover .tag {
   background: #e01010;
 }
 
+.eda-star.yellow,
 .eda-star.green {
-  background: #1f9d36;
+  background: #d97706;
 }
 
 /* ============================================================

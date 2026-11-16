@@ -214,7 +214,7 @@
       el.innerHTML = `<span><i class="dot red"></i> Peringkat Top 10 Titik Terbesar (DARURAT)</span> ` +
                      `<span><i class="dot dash"></i> Batas Kalimantan</span>`;
     } else if (mode === "aman10") {
-      el.innerHTML = `<span><i class="dot green"></i> Sampel 10 Lokasi Terkendali (AMAN)</span> ` +
+      el.innerHTML = `<span><i class="dot yellow"></i> Sampel 10 Lokasi Terkendali (AMAN)</span> ` +
                      `<span><i class="dot dash"></i> Batas Kalimantan</span>`;
     } else {
       el.innerHTML = `<span><i class="dot dash"></i> Batas Kalimantan</span> ` +
@@ -325,7 +325,7 @@
     },
 
     aman10(d) {
-      drawPins(d.aman10, "green");
+      drawPins(d.aman10, "yellow");
       updateLegend("aman10");
       const rows = d.aman10.map((r, i) => [i + 1, r.acq_date, r.lokasi ? escapeHtml(r.lokasi) : "Area Lahan Terpantau", r.latitude, r.longitude, fmt2(r.frp), r.brightness]);
       return `<h3>8. Sampel 10 Lokasi Terkendali (AMAN)</h3>${table(["#", "Tanggal", "Wilayah / Lokasi", "Lat", "Lon", "FRP (MW)", "Brightness (K)"], rows)}` +

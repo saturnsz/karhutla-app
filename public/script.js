@@ -93,7 +93,7 @@ function handleMapSelection(lat, lng, explicitPoint = null) {
   showError($("form-error"), "");
 
   if (pickMarker) map.removeLayer(pickMarker);
-  const color = isEmergency ? "#dc2626" : "#16a34a";
+  const color = isEmergency ? "#dc2626" : "#d97706";
   pickMarker = L.circleMarker([lat, lng], {
     radius: 7,
     color: color,
@@ -136,10 +136,10 @@ async function loadMapHotspots() {
       const marker = L.circleMarker([lat, lon], {
         renderer: hotspotCanvas,
         radius: isDar ? 3.5 : 2.5,
-        color: isDar ? "#b91c1c" : "#15803d",
-        fillColor: isDar ? "#ef4444" : "#22c55e",
-        fillOpacity: isDar ? 0.75 : 0.45,
-        weight: isDar ? 0.6 : 0,
+        color: isDar ? "#b91c1c" : "#b45309",
+        fillColor: isDar ? "#ef4444" : "#f59e0b",
+        fillOpacity: isDar ? 0.75 : 0.65,
+        weight: isDar ? 0.6 : 0.5,
       });
       marker.on("click", (ev) => {
         L.DomEvent.stopPropagation(ev);
@@ -153,7 +153,7 @@ async function loadMapHotspots() {
 }
 
 function addResultMarker(r, label) {
-  const color = r.label === 1 ? "#dc2626" : "#16a34a";
+  const color = r.label === 1 ? "#dc2626" : "#d97706";
   const m = L.circleMarker([r.input.latitude, r.input.longitude], {
     radius: r.label === 1 ? 10 : 7, color, fillColor: color, fillOpacity: 0.85, weight: 2.5,
   });
