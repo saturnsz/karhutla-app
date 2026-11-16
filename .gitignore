@@ -2,3 +2,11 @@ venv/
 __pycache__/
 *.csv
 .vercel
+/icons/
+/icons-shadowless/
+/bonus/
+/combination.png
+/CHANGELOG.txt
+/FILENAME.txt
+/README.txt
+

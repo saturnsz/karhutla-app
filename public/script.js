@@ -110,11 +110,11 @@ function handleMapSelection(lat, lng, explicitPoint = null) {
 
   pickMarker.bindPopup(`
     <div style="font-family: Tahoma, sans-serif; font-size: 11px; line-height: 1.4;">
-      <strong style="color: ${color}">📍 ${isEmergency ? "ZONA DARURAT (Prioritas Pemadaman)" : "ZONA AMAN (Terkendali)"}</strong><br>
+      <strong style="color: ${color}"><img src="icons/map-pin.png" style="width:14px;height:14px;vertical-align:-1px;margin-right:4px;" />${isEmergency ? "ZONA DARURAT (Prioritas Pemadaman)" : "ZONA AMAN (Terkendali)"}</strong><br>
       <b>Koordinat:</b> (${lat}, ${lng})<br>
       <b>Brightness:</b> ${brightnessVal} K &middot; <b>Conf:</b> ${confidenceVal}%<br>
       <small style="color: #444">${statusDesc}</small><br>
-      <button type="button" class="xp-btn" style="margin-top:6px; width: 100%; font-size: 11px; padding: 3px 6px;" onclick="document.getElementById('predict-form').requestSubmit ? document.getElementById('predict-form').requestSubmit() : document.getElementById('btn-predict').click()">⚡ Klasifikasikan Titik Ini</button>
+      <button type="button" class="xp-btn" style="margin-top:6px; width: 100%; font-size: 11px; padding: 3px 6px;" onclick="document.getElementById('predict-form').requestSubmit ? document.getElementById('predict-form').requestSubmit() : document.getElementById('btn-predict').click()"><img src="icons/lightning.png" style="width:13px;height:13px;vertical-align:-2px;margin-right:4px;" />Klasifikasikan Titik Ini</button>
     </div>
   `).openPopup();
 
@@ -877,7 +877,7 @@ function updateAuthUI() {
     if (taskBtnEda) taskBtnEda.disabled = false;
     if (taskBtnPublikasi) taskBtnPublikasi.disabled = false;
     if (userDisplay) userDisplay.textContent = "Administrator (admin)";
-    if (statusUser) statusUser.textContent = "👤 Admin: Aktif";
+    if (statusUser) statusUser.innerHTML = '<img class="sb-icon-img" src="icons/user.png" alt="" /> Admin: Aktif';
   } else {
     if (loginOverlay) {
       loginOverlay.hidden = false;
@@ -914,7 +914,7 @@ function updateAuthUI() {
       taskBtnPublikasi.disabled = true;
     }
     if (userDisplay) userDisplay.textContent = "Tamu (Belum Masuk)";
-    if (statusUser) statusUser.textContent = "🔒 Terkunci";
+    if (statusUser) statusUser.innerHTML = '<img class="sb-icon-img" src="icons/lock.png" alt="" /> Terkunci';
     const passInput = $("login-password");
     if (passInput) passInput.value = "admin";
     showError($("login-error"), "");

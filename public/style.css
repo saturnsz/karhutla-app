@@ -116,6 +116,71 @@ body {
   font-size: 16px;
 }
 
+.title-icon-img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.menu-icon-img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  flex-shrink: 0;
+}
+
+.badge-icon-img {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  flex-shrink: 0;
+  vertical-align: -2px;
+  margin-right: 4px;
+}
+
+.tl-icon-img {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  vertical-align: middle;
+}
+
+.btn-icon-img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  vertical-align: -2px;
+  margin-right: 4px;
+}
+
+.sb-icon-img {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  vertical-align: -2px;
+  margin-right: 4px;
+}
+
 .controls {
   display: flex;
   gap: 2px;
@@ -226,13 +291,15 @@ body {
 .dropdown button,
 .sm-list button,
 .sm-foot button {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   width: 100%;
   text-align: left;
   background: none;
   border: 0;
-  padding: 5px 22px;
-  font: 13px var(--font);
+  padding: 5px 12px;
+  font: 12px var(--font);
   cursor: default;
 }
 
@@ -264,7 +331,20 @@ body {
 }
 
 .banner-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   font-size: 34px;
+}
+
+.banner-icon-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
 }
 
 .t-red {
@@ -900,6 +980,16 @@ tbody tr:hover .tag {
   line-height: 1;
 }
 
+.task-icon-img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  flex-shrink: 0;
+}
+
 .task-text {
   white-space: nowrap;
   overflow: hidden;
@@ -918,6 +1008,16 @@ tbody tr:hover .tag {
   background: linear-gradient(180deg, #0c8fe8 0%, #1294ea 20%, #0f84dc 90%, #0b6cbf 100%);
   border-left: 1px solid #0b4fa8;
   box-shadow: inset 1px 0 0 #3cb0f5;
+}
+
+.tray-icon-img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  flex-shrink: 0;
 }
 
 /* ---------- Start menu ---------- */
@@ -954,6 +1054,15 @@ tbody tr:hover .tag {
   background: #fff;
   border: 2px solid #e8eefc;
   border-radius: 4px;
+}
+
+.avatar-img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
 }
 
 .sm-list button {
@@ -1141,6 +1250,17 @@ tbody tr:hover .tag {
 .login-note .note-icon {
   font-size: 18px;
   line-height: 1;
+}
+
+.note-icon-img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  flex-shrink: 0;
+  margin-top: 1px;
 }
 
 .login-note code {
@@ -1480,18 +1600,18 @@ tbody tr:hover .tag {
 }
 
 .timeline-list li.done .timeline-icon {
-  background: #16a34a;
-  color: #fff;
+  background: #dcfce7;
+  border: 1px solid #86efac;
 }
 
 .timeline-list li.current .timeline-icon {
-  background: #f59e0b;
-  color: #fff;
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
 }
 
 .timeline-list li.upcoming .timeline-icon {
-  background: #cbd5e1;
-  color: #475569;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
 }
 
 .timeline-list strong {
@@ -1785,6 +1905,12 @@ tbody tr:hover .tag {
     font-size: 14px;
   }
 
+  .task-icon-img {
+    width: 15px;
+    height: 15px;
+    margin-right: 4px;
+  }
+
   .task-text {
     font-size: 11px;
     font-weight: bold;
@@ -1942,6 +2068,12 @@ tbody tr:hover .tag {
 
   .task-icon {
     font-size: 12px;
+  }
+
+  .task-icon-img {
+    width: 13px;
+    height: 13px;
+    margin-right: 2px;
   }
 
   .task-text {
