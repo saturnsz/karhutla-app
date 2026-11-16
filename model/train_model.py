@@ -78,7 +78,7 @@ def main(csv_path: str) -> None:
 
     print(pd.DataFrame(results).to_string(index=False))
 
-    # Model terbaik untuk deployment: Naive Bayes (ringan, akurasi & kappa tertinggi di notebook)
+    # Model terbaik untuk deployment: Naive Bayes 
     best_model = GaussianNB()
     best_model.fit(X_train, y_train)
 
