@@ -387,13 +387,17 @@ if (winPublikasi) {
 function closeMenus() {
   document.querySelectorAll(".dropdown").forEach((d) => (d.hidden = true));
   document.querySelectorAll(".menu > button").forEach((b) => b.classList.remove("open"));
-  $("start-menu").hidden = true;
+  const sm = $("start-menu");
+  if (sm) sm.hidden = true;
+  const sb = $("start-btn");
+  if (sb) sb.classList.remove("active");
 }
 
 document.querySelectorAll("[data-menu]").forEach((btn) => {
   btn.addEventListener("click", (e) => {
     e.stopPropagation();
     const dd = $(btn.dataset.menu);
+    if (!dd) return;
     const willOpen = dd.hidden;
     closeMenus();
     dd.hidden = !willOpen;
@@ -401,12 +405,24 @@ document.querySelectorAll("[data-menu]").forEach((btn) => {
   });
 });
 
-$("start-btn").addEventListener("click", (e) => {
-  e.stopPropagation();
-  const willOpen = $("start-menu").hidden;
-  closeMenus();
-  $("start-menu").hidden = !willOpen;
-});
+const startBtn = $("start-btn");
+const startMenu = $("start-menu");
+if (startBtn && startMenu) {
+  startBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const willOpen = startMenu.hidden;
+    closeMenus();
+    startMenu.hidden = !willOpen;
+    startBtn.classList.toggle("active", willOpen);
+  });
+
+  startMenu.addEventListener("click", (e) => {
+    // Biarkan klik pada data-action diproses, tapi cegah penutupan tidak sengaja jika klik di background/header menu
+    if (!e.target.closest("[data-action]")) {
+      e.stopPropagation();
+    }
+  });
+}
 document.addEventListener("click", closeMenus);
 
 /* Kontrol Jendela Klasifikasi Karhutla */

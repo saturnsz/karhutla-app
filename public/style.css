@@ -914,8 +914,10 @@ tbody tr:hover .tag {
   filter: brightness(1.1);
 }
 
-.start-btn:active {
-  filter: brightness(0.92);
+.start-btn:active,
+.start-btn.active {
+  filter: brightness(0.88);
+  box-shadow: inset 1px 1px 3px rgba(0, 0, 0, .5);
 }
 
 .start-btn em {
@@ -1025,7 +1027,7 @@ tbody tr:hover .tag {
   position: fixed;
   left: 0;
   bottom: var(--taskbar-h);
-  z-index: 60;
+  z-index: 1050;
   width: 280px;
   background: #fff;
   border: 2px solid #0c3ec0;
@@ -1927,6 +1929,7 @@ tbody tr:hover .tag {
     width: min(290px, 94vw);
     max-height: calc(100vh - var(--taskbar-h) - 8px);
     overflow-y: auto;
+    z-index: 1050;
   }
 
   .sm-head {
