@@ -5,8 +5,10 @@ const API_BASE = "";
 window.API_BASE = API_BASE;
 
 const PRESETS = {
-  palangkaraya: { latitude: -2.20, longitude: 113.91, brightness: 350.5, confidence: 100 },
-  pontianak:    { latitude: -0.02, longitude: 109.33, brightness: 310.2, confidence: 82 },
+  palangkaraya: { latitude: -2.20, longitude: 113.91, brightness: 350.5, confidence: 100, label: "Palangkaraya (DARURAT)" },
+  pontianak:    { latitude: -0.02, longitude: 109.33, brightness: 310.2, confidence: 82, label: "Pontianak (AMAN)" },
+  pulangpisau:  { latitude: -2.75, longitude: 114.15, brightness: 348.0, confidence: 98, label: "Pulang Pisau (DARURAT)" },
+  samarinda:    { latitude: -0.50, longitude: 117.15, brightness: 311.5, confidence: 83, label: "Samarinda (AMAN)" },
 };
 const FIELDS = ["latitude", "longitude", "brightness", "confidence"];
 const HISTORY_KEY = "karhutla_history_v1";
@@ -19,7 +21,7 @@ const ADMIN_PASS = "admin";
 
 const $ = (id) => document.getElementById(id);
 
-/* ======================= PETA ======================= */
+/* ======================= PETA & TITIK PANAS ======================= */
 const map = L.map("map").setView([0.2, 114], 6);
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 18, attribution: "&copy; OpenStreetMap contributors",
@@ -29,28 +31,140 @@ L.rectangle([[-4.5, 108.5], [4.5, 119.5]], {
   color: "#c2410c", weight: 1.5, fill: false, dashArray: "6 6",
 }).addTo(map);
 
+const hotspotCanvas = L.canvas({ padding: 0.5 });
+const hotspotLayer = L.layerGroup().addTo(map);
 const markerLayer = L.layerGroup().addTo(map);
 let pickMarker = null;
+let hotspotsData = []; // [lat, lon, risk, brightness, confidence]
+
+function findNearestHotspot(lat, lng) {
+  if (!hotspotsData || !hotspotsData.length) return null;
+  let best = null;
+  let minDistSq = Infinity;
+  for (let i = 0; i < hotspotsData.length; i++) {
+    const p = hotspotsData[i];
+    const dLat = p[0] - lat;
+    const dLng = p[1] - lng;
+    const dSq = dLat * dLat + dLng * dLng;
+    if (dSq < minDistSq) {
+      minDistSq = dSq;
+      best = p;
+    }
+  }
+  return { point: best, distKm: Math.sqrt(minDistSq) * 111.0 };
+}
+
+function handleMapSelection(lat, lng, explicitPoint = null) {
+  $("latitude").value = lat;
+  $("longitude").value = lng;
+
+  let brightnessVal, confidenceVal, statusDesc, isEmergency;
+
+  if (explicitPoint) {
+    // Dipilih langsung dari titik hotspot satelit di peta
+    brightnessVal = explicitPoint[3];
+    confidenceVal = explicitPoint[4];
+    isEmergency = explicitPoint[2] === 1;
+    statusDesc = isEmergency
+      ? `Titik Satelit DARURAT (FRP > 30 MW, Brightness ${brightnessVal} K, Conf ${confidenceVal}%)`
+      : `Titik Satelit AMAN (Terkendali, Brightness ${brightnessVal} K, Conf ${confidenceVal}%)`;
+  } else {
+    // Diklik bebas di koordinat peta oleh kursor
+    const nearest = findNearestHotspot(lat, lng);
+    if (nearest && nearest.distKm <= 35) {
+      // Ada klaster titik panas satelit dalam radius 35 km
+      brightnessVal = nearest.point[3];
+      confidenceVal = nearest.point[4];
+      isEmergency = nearest.point[2] === 1;
+      statusDesc = isEmergency
+        ? `Klaster DARURAT terdekat (~${nearest.distKm.toFixed(1)} km) &middot; Brightness: ${brightnessVal} K, Conf: ${confidenceVal}%`
+        : `Klaster AMAN terdekat (~${nearest.distKm.toFixed(1)} km) &middot; Brightness: ${brightnessVal} K, Conf: ${confidenceVal}%`;
+    } else {
+      // Area aman / jauh dari titik kebakaran aktif
+      brightnessVal = 308.2;
+      confidenceVal = 82;
+      isEmergency = false;
+      statusDesc = "Area Aman / Terkendali (Tidak terdeteksi titik kebakaran aktif di sekitar lokasi)";
+    }
+  }
+
+  $("brightness").value = brightnessVal;
+  $("confidence").value = confidenceVal;
+  showError($("form-error"), "");
+
+  if (pickMarker) map.removeLayer(pickMarker);
+  const color = isEmergency ? "#dc2626" : "#16a34a";
+  pickMarker = L.circleMarker([lat, lng], {
+    radius: 7,
+    color: color,
+    fillColor: color,
+    fillOpacity: 0.85,
+    weight: 2,
+  }).addTo(map);
+
+  pickMarker.bindPopup(`
+    <div style="font-family: Tahoma, sans-serif; font-size: 11px; line-height: 1.4;">
+      <strong style="color: ${color}">📍 ${isEmergency ? "ZONA DARURAT (Prioritas Pemadaman)" : "ZONA AMAN (Terkendali)"}</strong><br>
+      <b>Koordinat:</b> (${lat}, ${lng})<br>
+      <b>Brightness:</b> ${brightnessVal} K &middot; <b>Conf:</b> ${confidenceVal}%<br>
+      <small style="color: #444">${statusDesc}</small><br>
+      <button type="button" class="xp-btn" style="margin-top:6px; width: 100%; font-size: 11px; padding: 3px 6px;" onclick="document.getElementById('predict-form').requestSubmit ? document.getElementById('predict-form').requestSubmit() : document.getElementById('btn-predict').click()">⚡ Klasifikasikan Titik Ini</button>
+    </div>
+  `).openPopup();
+
+  setStatus(`Koordinat dipilih: (${lat}, ${lng}) &mdash; ${statusDesc}`);
+}
 
 map.on("click", (e) => {
   const lat = +e.latlng.lat.toFixed(5);
   const lng = +e.latlng.lng.toFixed(5);
-  $("latitude").value = lat;
-  $("longitude").value = lng;
-  if (pickMarker) map.removeLayer(pickMarker);
-  pickMarker = L.circleMarker([lat, lng], { radius: 6, color: "#475569", fillOpacity: 0.4 }).addTo(map);
-  setStatus(`Koordinat dipilih: ${lat}, ${lng}`);
+  handleMapSelection(lat, lng);
 });
+
+async function loadMapHotspots() {
+  try {
+    const res = await fetch((window.API_BASE || "") + "/api/eda?section=sebaran");
+    if (!res.ok) return;
+    const data = await res.json();
+    const pts = (data.sebaran && data.sebaran.points) || [];
+    hotspotsData = pts;
+
+    hotspotLayer.clearLayers();
+    pts.forEach((p) => {
+      const [lat, lon, risk, br, cf] = p;
+      const isDar = risk === 1;
+      const marker = L.circleMarker([lat, lon], {
+        renderer: hotspotCanvas,
+        radius: isDar ? 3.5 : 2.5,
+        color: isDar ? "#b91c1c" : "#15803d",
+        fillColor: isDar ? "#ef4444" : "#22c55e",
+        fillOpacity: isDar ? 0.75 : 0.45,
+        weight: isDar ? 0.6 : 0,
+      });
+      marker.on("click", (ev) => {
+        L.DomEvent.stopPropagation(ev);
+        handleMapSelection(lat, lon, p);
+      });
+      marker.addTo(hotspotLayer);
+    });
+  } catch (err) {
+    console.warn("Peta titik panas satelit tidak dapat dimuat:", err);
+  }
+}
 
 function addResultMarker(r, label) {
   const color = r.label === 1 ? "#dc2626" : "#16a34a";
   const m = L.circleMarker([r.input.latitude, r.input.longitude], {
-    radius: r.label === 1 ? 9 : 6, color, fillColor: color, fillOpacity: 0.7, weight: 2,
+    radius: r.label === 1 ? 10 : 7, color, fillColor: color, fillOpacity: 0.85, weight: 2.5,
   });
   m.bindPopup(
-    `<strong>${r.status}</strong>${label ? " &middot; #" + label : ""}<br>` +
-    `P(Darurat): ${r.probabilitas.darurat}%<br>` +
-    `Lat ${r.input.latitude}, Lon ${r.input.longitude}`
+    `<div style="font-family: Tahoma, sans-serif; font-size: 11.5px; line-height: 1.4;">` +
+    `<strong style="color:${color}">HASIL: ${r.status}</strong>${label ? " &middot; #" + label : ""}<br>` +
+    `<b>P(Darurat):</b> ${r.probabilitas.darurat}% &middot; <b>P(Aman):</b> ${r.probabilitas.aman}%<br>` +
+    `<b>Koordinat:</b> (${r.input.latitude}, ${r.input.longitude})<br>` +
+    `<b>Brightness:</b> ${r.input.brightness} K &middot; <b>Conf:</b> ${r.input.confidence}%<br>` +
+    `<small style="color:#444">Tindakan: ${escapeHtml(r.tindakan)}</small>` +
+    `</div>`
   );
   m.addTo(markerLayer);
   return m;
@@ -429,11 +543,15 @@ if ($("btn-copy-bib")) {
 
 function applyPreset(name) {
   const p = PRESETS[name];
+  if (!p) return;
   FIELDS.forEach((f) => ($(f).value = p[f]));
   showError($("form-error"), "");
   activateTab("single");
   focusWindow("klasifikasi");
-  setStatus(`Contoh dimuat: ${name}`);
+
+  handleMapSelection(p.latitude, p.longitude, [p.latitude, p.longitude, p.brightness >= 335 ? 1 : 0, p.brightness, p.confidence]);
+  map.setView([p.latitude, p.longitude], Math.max(map.getZoom(), 7));
+  setStatus(`Contoh dimuat: ${p.label || name}`);
 }
 
 function runAction(action) {
@@ -829,6 +947,7 @@ if ($("btn-fill-admin")) {
 renderHistory();
 checkHealth();
 loadModelInfo();
+loadMapHotspots();
 updateAuthUI();
 setStatus("Siap");
 

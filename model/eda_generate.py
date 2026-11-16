@@ -103,8 +103,8 @@ def main(csv_path: str, geocode: bool) -> None:
         parts.append(sub)
     sc = pd.concat(parts)
     scatter = {
-        "points": [[round(a, 4), round(b, 4), int(r)]
-                   for a, b, r in zip(sc["latitude"], sc["longitude"], sc["target_risk"])],
+        "points": [[round(float(a), 4), round(float(b), 4), int(r), round(float(br), 1), round(float(cf), 1)]
+                   for a, b, br, cf, r in zip(sc["latitude"], sc["longitude"], sc["brightness"], sc["confidence"], sc["target_risk"])],
         "dikirim": int(len(sc)),
         "total": int(len(df)),
     }
