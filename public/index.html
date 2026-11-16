@@ -13,7 +13,7 @@
   <div class="desktop">
 
     <!-- ================= FITUR 1: JENDELA KLASIFIKASI ================= -->
-    <section class="window focused" id="main-window" aria-labelledby="win-title" hidden style="display: none;">
+    <section class="window" id="main-window" aria-labelledby="win-title" hidden style="display: none;">
       <header class="titlebar">
         <span class="title-icon" aria-hidden="true">🔥</span>
         <h1 id="win-title">Klasifikasi Wilayah Pemadaman Karhutla di Kalimantan</h1>
@@ -207,7 +207,7 @@
 
       <footer class="statusbar">
         <span class="cell grow" id="status-text">Siap</span>
-        <span class="cell" id="status-user">👤 Admin</span>
+        <span class="cell" id="status-user">🔒 Terkunci</span>
         <span class="cell"><span class="progress" id="progress" hidden><i></i></span></span>
         <span class="cell" id="status-api">API: memeriksa...</span>
       </footer>
@@ -492,7 +492,7 @@
 
     <!-- ================= START MENU ================= -->
     <div class="start-menu" id="start-menu" hidden>
-      <div class="sm-head"><span class="avatar">👨‍💼</span> <span id="user-display">Administrator (admin)</span></div>
+      <div class="sm-head"><span class="avatar">👨‍💼</span> <span id="user-display">Tamu (Belum Masuk)</span></div>
       <ul class="sm-list">
         <li><button type="button" data-action="open-klasifikasi">🔥 Klasifikasi Karhutla</button></li>
         <li><button type="button" data-action="open-eda">📊 Eksplorasi Data (EDA)</button></li>
@@ -517,16 +517,16 @@
         <span class="flag" aria-hidden="true"></span><em>start</em>
       </button>
       <div class="task-items" id="task-items">
-        <button type="button" class="task-btn active" id="task-btn-klasifikasi"
+        <button type="button" class="task-btn" id="task-btn-klasifikasi" disabled
           title="Buka Fitur 1: Klasifikasi Karhutla">
           <span class="task-icon" aria-hidden="true">🔥</span>
           <span class="task-text">Klasifikasi Karhutla</span>
         </button>
-        <button type="button" class="task-btn" id="task-btn-eda" title="Buka Fitur 2: Eksplorasi Data (EDA)">
+        <button type="button" class="task-btn" id="task-btn-eda" disabled title="Buka Fitur 2: Eksplorasi Data (EDA)">
           <span class="task-icon" aria-hidden="true">📊</span>
           <span class="task-text">Eksplorasi Data (EDA)</span>
         </button>
-        <button type="button" class="task-btn" id="task-btn-publikasi" title="Buka Fitur 3: Publikasi Jurnal SINTA 4">
+        <button type="button" class="task-btn" id="task-btn-publikasi" disabled title="Buka Fitur 3: Publikasi Jurnal SINTA 4">
           <span class="task-icon" aria-hidden="true">📜</span>
           <span class="task-text">Publikasi SINTA 4</span>
         </button>

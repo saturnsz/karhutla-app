@@ -6,9 +6,9 @@ window.API_BASE = API_BASE;
 
 const PRESETS = {
   palangkaraya: { latitude: -2.20, longitude: 113.91, brightness: 350.5, confidence: 100, label: "Palangkaraya (DARURAT)" },
-  pontianak:    { latitude: -0.02, longitude: 109.33, brightness: 310.2, confidence: 82, label: "Pontianak (AMAN)" },
-  pulangpisau:  { latitude: -2.75, longitude: 114.15, brightness: 348.0, confidence: 98, label: "Pulang Pisau (DARURAT)" },
-  samarinda:    { latitude: -0.50, longitude: 117.15, brightness: 311.5, confidence: 83, label: "Samarinda (AMAN)" },
+  pontianak: { latitude: -0.02, longitude: 109.33, brightness: 310.2, confidence: 82, label: "Pontianak (AMAN)" },
+  pulangpisau: { latitude: -2.75, longitude: 114.15, brightness: 348.0, confidence: 98, label: "Pulang Pisau (DARURAT)" },
+  samarinda: { latitude: -0.50, longitude: 117.15, brightness: 311.5, confidence: 83, label: "Samarinda (AMAN)" },
 };
 const FIELDS = ["latitude", "longitude", "brightness", "confidence"];
 const HISTORY_KEY = "karhutla_history_v1";
@@ -18,6 +18,12 @@ const MAX_HISTORY = 15;
 const AUTH_KEY = "karhutla_admin_auth";
 const ADMIN_USER = "admin";
 const ADMIN_PASS = "admin";
+
+// Bersihkan data login lawas di localStorage agar user selalu harus login saat baru masuk link
+try {
+  localStorage.removeItem(AUTH_KEY);
+  localStorage.removeItem("karhutla_auth");
+} catch (e) {}
 
 const $ = (id) => document.getElementById(id);
 
@@ -556,6 +562,9 @@ function applyPreset(name) {
 
 function runAction(action) {
   closeMenus();
+  if (!isLoggedIn() && action !== "about" && action !== "exit") {
+    return;
+  }
   if (action === "open-klasifikasi") return openFeature("klasifikasi");
   if (action === "open-eda") return openFeature("eda");
   if (action === "open-publikasi") return openFeature("publikasi");
@@ -845,7 +854,11 @@ async function loadModelInfo() {
 
 /* ======================= LOGIKA LOGIN / LOGOUT ADMIN ======================= */
 function isLoggedIn() {
-  return localStorage.getItem(AUTH_KEY) === "admin";
+  try {
+    return sessionStorage.getItem(AUTH_KEY) === "admin";
+  } catch (e) {
+    return false;
+  }
 }
 
 function updateAuthUI() {
@@ -905,6 +918,8 @@ function updateAuthUI() {
     const passInput = $("login-password");
     if (passInput) passInput.value = "admin";
     showError($("login-error"), "");
+    const errEl = $("login-error");
+    if (errEl) errEl.removeAttribute("style");
   }
 }
 
@@ -916,7 +931,10 @@ function handleLogin(e) {
   showError(errEl, "");
 
   if (u === ADMIN_USER && p === ADMIN_PASS) {
-    localStorage.setItem(AUTH_KEY, "admin");
+    try {
+      sessionStorage.setItem(AUTH_KEY, "admin");
+      localStorage.removeItem(AUTH_KEY);
+    } catch (e) {}
     updateAuthUI();
     setStatus("Selamat datang, Administrator.");
   } else {
@@ -926,10 +944,20 @@ function handleLogin(e) {
 }
 
 function handleLogout() {
-  localStorage.removeItem(AUTH_KEY);
+  try {
+    sessionStorage.removeItem(AUTH_KEY);
+    localStorage.removeItem(AUTH_KEY);
+  } catch (e) {}
   updateAuthUI();
-  setStatus("Sesi telah keluar (Log Off).");
-  showDialog("Log Off", "Anda telah keluar dari sesi Admin.", "info");
+  setStatus("Sesi telah keluar (Log Off). Silakan masuk kembali.");
+  const errEl = $("login-error");
+  if (errEl) {
+    errEl.textContent = "Sesi telah keluar (Log Off). Silakan klik 'Masuk (Log On)' untuk masuk kembali.";
+    errEl.hidden = false;
+    errEl.style.color = "#854d0e";
+    errEl.style.borderColor = "#fef08a";
+    errEl.style.background = "#fefce8";
+  }
 }
 
 if ($("login-form")) {
